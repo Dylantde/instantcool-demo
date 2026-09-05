@@ -1,0 +1,3214 @@
+<!doctype html>
+<html lang="zh-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="theme-color" content="#07090F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Instantcool · 一掃即涼</title>
+<style>
+/* ==========================================================================
+   INSTANTCOOL H5 — app.css
+   Mobile-first design system. Dark UI, ice accent.
+   Structure mirrors Yellowpal's IA: map home / centre scan FAB / profile.
+   ========================================================================== */
+
+:root{
+  /* brand */
+  --ic-ice:#38E1FF;
+  --ic-ice-deep:#0FA9D6;
+  --ic-ice-soft:rgba(56,225,255,.14);
+  --ic-mint:#5BF2C6;
+  --ic-warn:#FFB020;
+  --ic-danger:#FF5C6E;
+
+  /* surfaces */
+  --bg:#07090F;
+  --surface:#11141C;
+  --surface-2:#171C27;
+  --surface-3:#1F2634;
+  --line:rgba(255,255,255,.08);
+  --line-strong:rgba(255,255,255,.16);
+
+  /* text */
+  --tx:#F2F5F9;
+  --tx-2:#9AA6B8;
+  --tx-3:#5F6B7D;
+
+  /* metrics */
+  --r-sm:10px; --r:14px; --r-lg:20px; --r-xl:28px;
+  --tab-h:72px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-t:env(safe-area-inset-top,0px);
+
+  --shadow:0 10px 30px rgba(0,0,0,.45);
+  --font:"PingFang HK","Hiragino Sans CNS","Noto Sans HK","Microsoft JhengHei",
+         -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--tx);font-family:var(--font);
+  -webkit-font-smoothing:antialiased;overscroll-behavior-y:none;
+  font-size:15px;line-height:1.5;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer;padding:0}
+a{color:var(--ic-ice);text-decoration:none}
+img{max-width:100%;display:block}
+/* Inline SVGs carry no width/height attribute, so give every icon a sane
+   default. Anything that needs to be bigger overrides this by selector. */
+svg{width:20px;height:20px;flex:none}
+::-webkit-scrollbar{width:0;height:0}
+
+/* ---------- app shell (phone frame on desktop) --------------------------- */
+#app{
+  position:relative;width:100%;max-width:430px;margin:0 auto;
+  /* A definite height is required: the scroll region below is a flex child,
+     and a percentage/flex height only resolves against a definite parent. */
+  height:100vh;height:100dvh;
+  background:var(--bg);overflow:hidden;
+  display:flex;flex-direction:column;
+}
+@media (min-width:600px){
+  body{background:#04060A;padding:24px 0}
+  #app{
+    min-height:min(920px,calc(100vh - 48px));height:min(920px,calc(100vh - 48px));
+    border-radius:36px;border:1px solid var(--line);box-shadow:var(--shadow);
+  }
+}
+
+.screen{flex:1;display:flex;flex-direction:column;min-height:0;position:relative}
+.screen__body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--tab-h) + var(--safe-b) + 12px)}
+.screen__body--flush{padding:0 0 calc(var(--tab-h) + var(--safe-b))}
+.pad{padding:16px}
+
+/* ---------- top bar ------------------------------------------------------ */
+.topbar{
+  display:flex;align-items:center;gap:10px;padding:calc(var(--safe-t) + 14px) 14px 12px;
+  background:var(--bg);position:sticky;top:0;z-index:20;
+}
+.topbar__title{font-size:17px;font-weight:700;flex:1;text-align:center}
+.topbar__side{width:36px;flex:none}
+.iconbtn{
+  width:36px;height:36px;border-radius:50%;display:grid;place-items:center;
+  background:var(--surface-2);border:1px solid var(--line);color:var(--tx);
+}
+.iconbtn:active{background:var(--surface-3)}
+
+/* ---------- tab bar ------------------------------------------------------ */
+.tabbar{
+  position:absolute;left:0;right:0;bottom:0;height:calc(var(--tab-h) + var(--safe-b));
+  padding-bottom:var(--safe-b);
+  background:rgba(12,15,22,.92);backdrop-filter:blur(18px);
+  border-top:1px solid var(--line);
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;z-index:40;
+}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--tx-3);font-size:11px;font-weight:600;padding:8px 0}
+.tab.is-active{color:var(--ic-ice)}
+.tab svg{width:22px;height:22px}
+.tab--scan{transform:translateY(-16px);color:var(--tx);gap:6px}
+.tab--scan .fab{
+  width:60px;height:60px;border-radius:50%;display:grid;place-items:center;
+  background:linear-gradient(150deg,var(--ic-ice),var(--ic-ice-deep));
+  box-shadow:0 8px 24px rgba(56,225,255,.35);color:#04121A;
+}
+.tab--scan .fab svg{width:28px;height:28px}
+.tab--scan span{color:var(--tx-2);font-size:11px;font-weight:600}
+
+/* ---------- map ---------------------------------------------------------- */
+.map{position:absolute;inset:0;background:#0B1622;overflow:hidden}
+.map__svg{position:absolute;inset:0;width:100%;height:100%}
+.map__pin{
+  position:absolute;transform:translate(-50%,-100%);cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;
+}
+.map__pin .dot{
+  width:34px;height:34px;border-radius:50% 50% 50% 4px;transform:rotate(45deg);
+  background:linear-gradient(140deg,var(--ic-ice),var(--ic-ice-deep));
+  display:grid;place-items:center;box-shadow:0 6px 14px rgba(0,0,0,.5);
+  border:2px solid rgba(255,255,255,.85);
+}
+.map__pin .dot svg{transform:rotate(-45deg);width:17px;height:17px;color:#04121A}
+.map__pin--pipeline .dot{background:linear-gradient(140deg,#4A5568,#2D3748);opacity:.75}
+.map__pin--pilot .dot{background:linear-gradient(140deg,var(--ic-mint),#12A87E)}
+.map__pin.is-active .dot{outline:3px solid rgba(56,225,255,.35);outline-offset:2px}
+.map__me{
+  position:absolute;width:16px;height:16px;border-radius:50%;background:#4C8DFF;
+  border:3px solid #fff;box-shadow:0 0 0 8px rgba(76,141,255,.2);transform:translate(-50%,-50%)
+}
+.map__overlay{position:absolute;inset:0;pointer-events:none}
+.map__overlay > *{pointer-events:auto}
+.map__ctl{position:absolute;right:14px;bottom:170px;display:flex;flex-direction:column;gap:10px}
+.map__note{
+  position:absolute;left:14px;bottom:14px;font-size:10px;color:var(--tx-3);
+  background:rgba(7,9,15,.7);padding:4px 8px;border-radius:6px;
+}
+
+.searchbar{
+  position:absolute;left:14px;right:14px;top:calc(var(--safe-t) + 14px);
+  display:flex;align-items:center;gap:10px;height:46px;padding:0 14px;
+  background:rgba(23,28,39,.94);backdrop-filter:blur(14px);
+  border:1px solid var(--line);border-radius:999px;color:var(--tx-2);font-size:14px;
+}
+.searchbar svg{width:18px;height:18px;flex:none}
+
+/* ---------- bottom sheet ------------------------------------------------- */
+.sheet{
+  position:absolute;left:0;right:0;bottom:calc(var(--tab-h) + var(--safe-b));
+  background:var(--surface);border-radius:var(--r-xl) var(--r-xl) 0 0;
+  border-top:1px solid var(--line);z-index:35;max-height:62%;
+  display:flex;flex-direction:column;animation:sheetUp .26s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes sheetUp{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+.sheet__grip{width:38px;height:4px;border-radius:2px;background:var(--line-strong);margin:10px auto 4px;flex:none}
+.sheet__body{overflow-y:auto;padding:8px 16px 20px}
+.modal-scrim{position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:34;animation:fade .2s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+/* ---------- cards & lists ------------------------------------------------ */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.card + .card{margin-top:10px}
+.card--flat{background:var(--surface-2);border-color:transparent}
+
+.list{display:flex;flex-direction:column;gap:8px}
+.row{
+  display:flex;align-items:center;gap:12px;padding:14px;
+  background:var(--surface-2);border:1px solid transparent;border-radius:var(--r);
+  width:100%;text-align:left;
+}
+.row:active{background:var(--surface-3)}
+.row__icon{width:22px;height:22px;flex:none;color:var(--tx-2)}
+.row__main{flex:1;min-width:0}
+.row__title{display:block;font-weight:600;font-size:15px}
+.row__sub{display:block;font-size:12px;color:var(--tx-2);margin-top:2px}
+.row__chev{color:var(--tx-3);flex:none}
+.row--danger .row__title{color:var(--ic-danger)}
+/* Selected state for rows used as a choice group (e.g. 取貨方式). */
+.row.is-active{border-color:var(--ic-ice);background:var(--ic-ice-soft)}
+.row.is-active .row__icon{color:var(--ic-ice)}
+
+.station{display:flex;gap:12px;align-items:flex-start;padding:14px;background:var(--surface-2);border-radius:var(--r);width:100%;text-align:left}
+.station__badge svg{width:22px;height:22px}
+.station__badge{
+  width:42px;height:42px;border-radius:12px;flex:none;display:grid;place-items:center;
+  background:var(--ic-ice-soft);color:var(--ic-ice)
+}
+.station__meta{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap}
+.row__main > .spread{width:100%}
+
+.stat{font-size:12px;color:var(--tx-2);display:flex;align-items:center;gap:4px}
+.stat b{color:var(--tx);font-variant-numeric:tabular-nums}
+.stat--out b{color:var(--ic-mint)}
+.stat--in b{color:var(--ic-ice)}
+
+/* ---------- bits --------------------------------------------------------- */
+.tag{
+  display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;
+  padding:3px 9px;border-radius:999px;background:var(--surface-3);color:var(--tx-2);
+  letter-spacing:.02em;
+}
+.tag--live{background:rgba(91,242,198,.14);color:var(--ic-mint)}
+.tag--pilot{background:rgba(56,225,255,.14);color:var(--ic-ice)}
+.tag--pipeline{background:rgba(255,255,255,.07);color:var(--tx-3)}
+.tag--warn{background:rgba(255,176,32,.16);color:var(--ic-warn)}
+.tag--done{background:rgba(255,255,255,.08);color:var(--tx-2)}
+.tag--active{background:rgba(56,225,255,.16);color:var(--ic-ice)}
+
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  height:50px;border-radius:var(--r);font-weight:700;font-size:15px;
+  background:linear-gradient(150deg,var(--ic-ice),var(--ic-ice-deep));color:#04121A;
+}
+.btn:active{filter:brightness(.92)}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.btn--ghost{background:var(--surface-2);color:var(--tx);border:1px solid var(--line)}
+.btn--danger{background:rgba(255,92,110,.14);color:var(--ic-danger)}
+.btn--sm{height:40px;font-size:14px;border-radius:var(--r-sm)}
+
+.field{
+  width:100%;height:50px;border-radius:var(--r);background:var(--surface-2);
+  border:1px solid var(--line);padding:0 14px;outline:none;
+}
+.field:focus{border-color:var(--ic-ice)}
+.field::placeholder{color:var(--tx-3)}
+
+.h1{font-size:24px;font-weight:800;letter-spacing:-.01em;margin:0 0 6px}
+.h2{font-size:17px;font-weight:700;margin:22px 0 10px}
+.h2:first-child{margin-top:6px}
+.muted{color:var(--tx-2);font-size:13px}
+.tiny{color:var(--tx-3);font-size:11px;line-height:1.6}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:9px 0;font-size:14px}
+.kv + .kv{border-top:1px solid var(--line)}
+.kv span{color:var(--tx-2)}
+.kv b{font-variant-numeric:tabular-nums;font-weight:700}
+.kv--total b{color:var(--ic-ice);font-size:17px}
+.divider{height:1px;background:var(--line);margin:14px 0}
+.center{text-align:center}
+.stack{display:flex;flex-direction:column;gap:10px}
+.spread{display:flex;align-items:center;justify-content:space-between;gap:10px}
+
+.segmented{display:flex;gap:8px;padding:4px;background:var(--surface-2);border-radius:999px}
+.segmented button{flex:1;height:34px;border-radius:999px;font-size:13px;font-weight:600;color:var(--tx-2)}
+.segmented button.is-active{background:var(--ic-ice);color:#04121A}
+
+.empty{padding:56px 24px;text-align:center;color:var(--tx-3)}
+.empty svg{width:44px;height:44px;margin-bottom:12px;opacity:.5}
+
+/* ---------- rental / timer ---------------------------------------------- */
+.timer{
+  margin:8px 0 4px;text-align:center;font-variant-numeric:tabular-nums;
+  font-size:52px;font-weight:800;letter-spacing:-.02em;
+  background:linear-gradient(180deg,#fff,#7FD9F0);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.fanwrap{display:grid;place-items:center;padding:14px 0}
+.fan{width:132px;height:132px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 35%,rgba(56,225,255,.22),transparent 68%);
+  border:1px solid var(--line)}
+.fan svg{width:74px;height:74px;color:var(--ic-ice);animation:spin 1.6s linear infinite}
+.fan--slow svg{animation-duration:3.2s}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.fan svg{animation:none}}
+
+.speeds{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.speeds button{height:44px;border-radius:var(--r-sm);background:var(--surface-2);border:1px solid var(--line);font-size:13px;font-weight:600;color:var(--tx-2)}
+.speeds button.is-active{border-color:var(--ic-ice);color:var(--ic-ice);background:var(--ic-ice-soft)}
+
+/* ---------- scanner ------------------------------------------------------ */
+.scanner{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:#05070C;padding:24px}
+.scanner__frame{
+  width:min(74vw,260px);aspect-ratio:1;border-radius:24px;position:relative;
+  background:repeating-linear-gradient(45deg,#0C1119,#0C1119 12px,#0E141E 12px,#0E141E 24px);
+  overflow:hidden;
+}
+.scanner__frame::after{
+  content:"";position:absolute;left:6%;right:6%;height:2px;top:0;
+  background:linear-gradient(90deg,transparent,var(--ic-ice),transparent);
+  animation:scanline 2.1s ease-in-out infinite;
+}
+@keyframes scanline{0%,100%{top:8%}50%{top:90%}}
+.scanner__corner{position:absolute;width:34px;height:34px;border:3px solid var(--ic-ice)}
+.scanner__corner.tl{top:10px;left:10px;border-right:0;border-bottom:0;border-radius:12px 0 0 0}
+.scanner__corner.tr{top:10px;right:10px;border-left:0;border-bottom:0;border-radius:0 12px 0 0}
+.scanner__corner.bl{bottom:10px;left:10px;border-right:0;border-top:0;border-radius:0 0 0 12px}
+.scanner__corner.br{bottom:10px;right:10px;border-left:0;border-top:0;border-radius:0 0 12px 0}
+
+/* ---------- splash ------------------------------------------------------- */
+.splash{
+  position:absolute;inset:0;z-index:100;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 40%,#0E2230,#05070C 70%);
+}
+.splash__inner{display:flex;flex-direction:column;align-items:center;gap:14px;animation:pop .5s cubic-bezier(.2,.9,.3,1)}
+@keyframes pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+.splash.is-out{opacity:0;pointer-events:none;transition:opacity .35s}
+
+.logo{display:flex;align-items:center;gap:10px}
+.logo__mark{width:34px;height:34px;color:var(--ic-ice)}
+.logo__mark svg{width:100%;height:100%}
+.logo__text{font-size:25px;font-weight:800;letter-spacing:-.02em}
+.logo__text em{font-style:normal;color:var(--ic-ice)}
+
+/* ---------- toast -------------------------------------------------------- */
+.toast{
+  position:absolute;left:50%;bottom:calc(var(--tab-h) + 32px);transform:translateX(-50%);
+  background:var(--surface-3);border:1px solid var(--line-strong);color:var(--tx);
+  padding:11px 18px;border-radius:999px;font-size:13px;font-weight:600;z-index:120;
+  box-shadow:var(--shadow);animation:toastIn .22s;max-width:88%;text-align:center;
+}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* ---------- accordion ---------------------------------------------------- */
+.acc{background:var(--surface-2);border-radius:var(--r);overflow:hidden}
+.acc + .acc{margin-top:8px}
+.acc__head{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:14px;text-align:left;font-size:14px;font-weight:600}
+.acc__head span:last-child{color:var(--ic-ice);font-size:18px;flex:none;line-height:1}
+.acc__body{padding:0 14px 14px;font-size:13px;color:var(--tx-2);line-height:1.65}
+
+/* ---------- demo ribbon -------------------------------------------------- */
+.demo-flag{
+  background:rgba(255,176,32,.12);border:1px solid rgba(255,176,32,.3);
+  color:var(--ic-warn);font-size:11px;font-weight:700;padding:8px 12px;
+  border-radius:var(--r-sm);margin:0 16px 12px;line-height:1.5;
+}
+
+/* ---------- partner dashboard ------------------------------------------- */
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.metric{background:var(--surface-2);border-radius:var(--r);padding:14px}
+.metric__label{font-size:11px;color:var(--tx-2);font-weight:600}
+.metric__value{font-size:23px;font-weight:800;margin-top:4px;font-variant-numeric:tabular-nums}
+.metric__value small{font-size:12px;color:var(--tx-2);font-weight:600;margin-left:3px}
+.bars{display:flex;align-items:flex-end;gap:6px;height:96px;margin-top:12px}
+.bars div{flex:1;background:linear-gradient(180deg,var(--ic-ice),rgba(56,225,255,.18));border-radius:4px 4px 0 0;min-height:3px}
+.bars-x{display:flex;gap:6px;margin-top:6px}
+.bars-x span{flex:1;text-align:center;font-size:9px;color:var(--tx-3)}
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ==== src/lib/config.js ==== */
+/* ==========================================================================
+   config.js — single source of truth for commercial + runtime settings.
+
+   Scope note: this file holds only customer-facing figures — the rate card the
+   renter is shown, the deposit, the retail prices, and the venue share a venue
+   is told in its first meeting. Internal cost structure, margins and financing
+   milestones are deliberately NOT here and must not be added: this file is
+   compiled into the browser bundle, and anything in it is readable by anyone
+   who opens the page.
+
+   Keep internal modelling in your own spreadsheets, not in the app.
+   ========================================================================== */
+window.IC = window.IC || {};
+
+IC.config = {
+  brand: {
+    name: 'Instantcool',
+    slogan_zh: '一掃即涼，夠晒方便',
+    slogan_en: 'Scan. Cool. Go.',
+    entity: 'Instantcool Technology Limited',
+    contact: { name: 'Dylan Tsui', email: 'dylantsui01@gmail.com', phone: '61493493' }
+  },
+
+  /* ---- rate card (shown to the renter) ---- */
+  pricing: {
+    currency: 'HKD',
+    ratePerHour: 8.00,
+    promoRatePerHour: 6.00,     // new-venue first-month promotion
+    billingBlockMinutes: 30,    // ASSUMPTION: part blocks charged in full
+    freeMinutes: 0,
+    preAuthDeposit: 100.00,     // KPay pre-authorisation hold
+    // No daily cap is defined. The pre-auth ceiling acts as the effective cap:
+    // an unreturned fan can never bill beyond the deposit.
+    maxChargePerRental: 100.00,
+    lostDeviceFee: 100.00
+  },
+
+  /* ---- venue partner ----
+     The revenue share is venue-facing by design: it is the headline term of
+     the partnership and appears on the partner dashboard. */
+  economics: {
+    venueSharePct: 0.35,
+    avgRentalHours: 1.5         // ASSUMPTION: used to project partner revenue
+  },
+
+  /* ---- retail 零售 ----
+     Selling the fan outright, alongside the rental network.
+     Both prices are ASSUMPTIONS — set them from a real retail pricing study
+     before launch. */
+  retail: {
+    enabled: true,
+    listPrice: 268.00,
+    memberPrice: 228.00,        // for accounts with a rental history
+    warrantyMonths: 12,
+    /* 以租轉購 — credit recent rental spend against a purchase. A renter who
+       has already paid to use the fan several times is the warmest possible
+       buyer; this converts them instead of losing them. The cap keeps the
+       discount bounded. */
+    rentToOwn: { enabled: true, windowDays: 30, maxCredit: 60.00 },
+    fulfilment: [
+      { id: 'cabinet', fee: 0.00, etaDays: 1 },
+      { id: 'sfExpress', fee: 30.00, etaDays: 2 }
+    ]
+  },
+
+  /* ---- hardware (產品目錄) ---- */
+  hardware: {
+    cabinetSlots: 8,
+    fanBatteryMah: 5000,
+    fanSpeeds: 3,
+    uvDisinfectSeconds: 90      // ASSUMPTION: UV-C cycle length
+  },
+
+  /* ---- runtime ---- */
+  runtime: {
+    apiMode: 'mock',            // 'mock' | 'live'
+    apiBaseUrl: '/api/v1',
+    defaultLocale: 'zh-HK',
+    mapProvider: 'schematic',   // 'schematic' | 'google'  (see components/map.js)
+    googleMapsApiKey: '',
+    demoData: true              // shows the demo-data banner. Set false for production.
+  }
+};
+
+/* ==== src/lib/util.js ==== */
+/* util.js — formatting, DOM and misc helpers. No dependencies. */
+window.IC = window.IC || {};
+
+IC.util = {
+  /* --- DOM --- */
+  el: function (sel, root) { return (root || document).querySelector(sel); },
+  els: function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); },
+
+  /** Escape untrusted text before it enters an innerHTML template. */
+  esc: function (s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  },
+
+  /** Delegated click binding: on(root, '[data-act="x"]', fn) */
+  on: function (root, sel, fn, evt) {
+    root.addEventListener(evt || 'click', function (e) {
+      var t = e.target.closest(sel);
+      if (t && root.contains(t)) fn(e, t);
+    });
+  },
+
+  /* --- money & time --- */
+  money: function (n, withSymbol) {
+    var v = (Math.round(Number(n) * 100) / 100).toFixed(2);
+    return (withSymbol === false ? '' : 'HK$') + v;
+  },
+
+  /** seconds -> "H:MM:SS" or "MM:SS" */
+  clock: function (sec) {
+    sec = Math.max(0, Math.floor(sec));
+    var h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+    var pad = function (x) { return x < 10 ? '0' + x : String(x); };
+    return h > 0 ? h + ':' + pad(m) + ':' + pad(s) : pad(m) + ':' + pad(s);
+  },
+
+  /** "2026-09-05 14:32" in local time */
+  stamp: function (ts) {
+    var d = new Date(ts), p = function (x) { return x < 10 ? '0' + x : String(x); };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) +
+           ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  },
+
+  durationLabel: function (mins, locale) {
+    var h = Math.floor(mins / 60), m = Math.round(mins % 60);
+    if (locale === 'en') return (h ? h + 'h ' : '') + m + 'm';
+    return (h ? h + ' 小時 ' : '') + m + ' 分鐘';
+  },
+
+  /* --- geo --- */
+  /** Great-circle distance in km (haversine). */
+  distanceKm: function (a, b) {
+    var R = 6371, rad = Math.PI / 180;
+    var dLat = (b.lat - a.lat) * rad, dLng = (b.lng - a.lng) * rad;
+    var la1 = a.lat * rad, la2 = b.lat * rad;
+    var x = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.sin(dLng / 2) * Math.sin(dLng / 2) * Math.cos(la1) * Math.cos(la2);
+    return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+  },
+
+  distanceLabel: function (km) {
+    return km < 1 ? Math.round(km * 1000) + ' m' : km.toFixed(1) + ' km';
+  },
+
+  /* --- misc --- */
+  id: function (prefix) {
+    return (prefix || 'id') + '_' + Date.now().toString(36) +
+           Math.random().toString(36).slice(2, 7);
+  },
+
+  delay: function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+};
+
+/* ==== src/lib/pricing.js ==== */
+/* ==========================================================================
+   pricing.js — the billing engine. The ONLY place rental cost is computed.
+   Mirrors the unit economics in the funding deck so the consumer app and the
+   partner dashboard can never drift apart.
+   ========================================================================== */
+window.IC = window.IC || {};
+
+IC.pricing = (function () {
+  var C = function () { return IC.config.pricing; };
+  var E = function () { return IC.config.economics; };
+
+  /**
+   * Cost of a rental.
+   * @param {number} minutes  elapsed minutes
+   * @param {boolean} promo   venue is inside its first-month 75折 window
+   * @returns {{minutes,billableMinutes,blocks,rate,gross,capped}}
+   */
+  function quote(minutes, promo) {
+    var c = C();
+    var rate = promo ? c.promoRatePerHour : c.ratePerHour;
+    var billable = Math.max(0, minutes - c.freeMinutes);
+    // Part-blocks round up: a 31-minute rental pays two blocks.
+    var blocks = billable <= 0 ? 0 : Math.ceil(billable / c.billingBlockMinutes);
+    var perBlock = rate * (c.billingBlockMinutes / 60);
+    var gross = blocks * perBlock;
+    var capped = gross > c.maxChargePerRental;
+    return {
+      minutes: minutes,
+      billableMinutes: billable,
+      blocks: blocks,
+      rate: rate,
+      perBlock: perBlock,
+      gross: capped ? c.maxChargePerRental : gross,
+      capped: capped
+    };
+  }
+
+  /**
+   * The venue's cut of a rental — the only revenue figure the app computes.
+   * Instantcool's own cost structure is deliberately not modelled here; it
+   * does not belong in a bundle the public can read.
+   */
+  function venueShare(gross) {
+    return gross * E().venueSharePct;
+  }
+
+  /** Live running total for the active-rental screen. */
+  function running(startedAt, promo, now) {
+    var mins = ((now || Date.now()) - startedAt) / 60000;
+    return quote(mins, promo);
+  }
+
+  /**
+   * Price a retail purchase.
+   * @param {number} qty
+   * @param {boolean} member        account qualifies for the member price
+   * @param {number} rentalSpend    HK$ spent renting inside the credit window
+   * @param {object} fulfilment     entry from config.retail.fulfilment
+   */
+  function retail(qty, member, rentalSpend, fulfilment) {
+    var r = IC.config.retail;
+    qty = Math.max(1, qty || 1);
+    var unit = member ? r.memberPrice : r.listPrice;
+    var subtotal = unit * qty;
+
+    // 以租轉購 credit applies once per order, not per unit.
+    var credit = 0;
+    if (r.rentToOwn.enabled && rentalSpend > 0) {
+      credit = Math.min(rentalSpend, r.rentToOwn.maxCredit);
+    }
+
+    var shipping = fulfilment ? fulfilment.fee : 0;
+    var total = Math.max(0, subtotal - credit) + shipping;
+
+    return {
+      qty: qty, unit: unit, member: !!member, subtotal: subtotal,
+      credit: credit, shipping: shipping, total: total
+    };
+  }
+
+  return { quote: quote, venueShare: venueShare, running: running, retail: retail };
+})();
+
+/* ==== src/lib/qr.js ==== */
+/* ==========================================================================
+   qr.js — minimal offline QR renderer.
+
+   Honest scope: this draws a deterministic, scannable-looking code block from
+   a hash of the payload. It is a VISUAL placeholder, not a spec-compliant
+   QR symbol — a phone camera will not decode it.
+
+   For production, drop in a real encoder (qrcode-generator, ~4KB gzipped) and
+   replace draw() below; nothing else in the app touches QR rendering.
+   ========================================================================== */
+window.IC = window.IC || {};
+
+IC.qr = {
+  compliant: false,
+
+  draw: function (canvas, text) {
+    if (!canvas || !canvas.getContext) return;
+    var ctx = canvas.getContext('2d');
+    var N = 25, size = canvas.width, cell = size / N;
+
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = '#05070C';
+
+    // Deterministic bit field from the payload.
+    var h = 2166136261;
+    for (var i = 0; i < text.length; i++) {
+      h ^= text.charCodeAt(i); h = (h * 16777619) >>> 0;
+    }
+    var rnd = function () { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; h >>>= 0; return h / 4294967296; };
+
+    var finder = function (r, c) {
+      return (r < 7 && c < 7) || (r < 7 && c >= N - 7) || (r >= N - 7 && c < 7);
+    };
+
+    for (var r = 0; r < N; r++) {
+      for (var c = 0; c < N; c++) {
+        if (finder(r, c)) continue;
+        if (rnd() > 0.52) ctx.fillRect(c * cell, r * cell, cell + 0.5, cell + 0.5);
+      }
+    }
+
+    // Three finder patterns.
+    [[0, 0], [0, N - 7], [N - 7, 0]].forEach(function (p) {
+      var r = p[0], c = p[1];
+      ctx.fillRect(c * cell, r * cell, 7 * cell, 7 * cell);
+      ctx.fillStyle = '#fff';
+      ctx.fillRect((c + 1) * cell, (r + 1) * cell, 5 * cell, 5 * cell);
+      ctx.fillStyle = '#05070C';
+      ctx.fillRect((c + 2) * cell, (r + 2) * cell, 3 * cell, 3 * cell);
+    });
+  }
+};
+
+/* ==== src/lib/store.js ==== */
+/* ==========================================================================
+   store.js — tiny observable state container.
+   The active rental survives a reload (people close the browser mid-rental),
+   so it is mirrored into localStorage. Everything else is session state.
+   ========================================================================== */
+window.IC = window.IC || {};
+
+IC.store = (function () {
+  var KEY = 'ic.state.v1';
+  var subs = [];
+
+  var state = {
+    signedIn: false,
+    user: null,
+    stations: [],
+    rental: null,       // active rental, or null
+    lastOrder: null,    // receipt just produced
+    promoMinutes: 0
+  };
+
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (raw) {
+      var saved = JSON.parse(raw);
+      state.signedIn = !!saved.signedIn;
+      state.rental = saved.rental || null;
+      state.promoMinutes = saved.promoMinutes || 0;
+    }
+  } catch (e) { /* private mode — run in memory */ }
+
+  function persist() {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({
+        signedIn: state.signedIn, rental: state.rental, promoMinutes: state.promoMinutes
+      }));
+    } catch (e) {}
+  }
+
+  return {
+    get: function () { return state; },
+    set: function (patch) {
+      Object.assign(state, patch);
+      persist();
+      subs.forEach(function (fn) { fn(state); });
+    },
+    subscribe: function (fn) { subs.push(fn); return function () { subs = subs.filter(function (f) { return f !== fn; }); }; },
+    reset: function () {
+      state.signedIn = false; state.user = null; state.rental = null;
+      state.lastOrder = null; state.promoMinutes = 0;
+      persist();
+    }
+  };
+})();
+
+/* ==== src/lib/i18n.js ==== */
+/* i18n.js — zh-HK (primary) / en. Add a locale by adding a dictionary key. */
+window.IC = window.IC || {};
+
+IC.i18n = (function () {
+  var dict = {
+    'zh-HK': {
+      appName: 'Instantcool', slogan: '一掃即涼，夠晒方便',
+      tabHome: '主頁', tabScan: '掃碼租借', tabProfile: '我的',
+
+      searchStations: '搜尋附近站點',
+      nearbyStations: '附近站點', available: '可借', returnable: '可還',
+      slots: '格口', openHours: '開放時間', navigate: '導航前往',
+      rentHere: '在此借用', stationClosed: '暫停服務',
+      statusLive: '營運中', statusPilot: '試點', statusPipeline: '洽談中',
+      demoNotice: '示範版本：站點、訂單及金額均為模擬數據，並非實際營運中的站點或服務。',
+      mapNote: '示意地圖 — 生產版接入 Google Maps',
+
+      scanTitle: '掃碼租借', scanHint: '對準機櫃上的二維碼', scanManual: '手動輸入機櫃編號',
+      cabinetCode: '機櫃編號', confirm: '確認', simulateScan: '模擬掃描（示範）',
+
+      rentConfirm: '確認租借', ratePerHour: '每小時', promoRate: '推廣價',
+      deposit: '預授權按金', depositNote: '借用時凍結，歸還後自動解除，款項不會過戶。',
+      billingNote: '以每 30 分鐘為單位計費，不足一節作一節計。',
+      agreeTerms: '我已閱讀並同意租借條款及私隱政策',
+      unlockNow: '解鎖並取出風扇', unlocking: '正在解鎖…', slotOpened: '格口 {n} 已開啟',
+
+      activeRental: '租借中', elapsed: '已使用', currentCharge: '目前費用',
+      fanSpeed: '風速', low: '低', mid: '中', high: '高',
+      findReturn: '尋找歸還點', endRental: '前往歸還',
+      rentedFrom: '借用站點', batteryLeft: '剩餘電量',
+
+      returnTitle: '歸還風扇', returnHint: '掃描歸還站點的二維碼，或選擇下方站點',
+      returnConfirm: '確認歸還', disinfecting: '紫外光消毒中…',
+      returned: '歸還成功', receipt: '收據',
+      duration: '使用時長', totalCharge: '總費用', depositReleased: '按金已解除',
+      backHome: '返回主頁',
+
+      shop: '零售購買', shopTitle: '零售購買', buyNow: '立即購買',
+      shopEntryTitle: '想長期用？買一部自己的',
+      shopEntrySub: '同款機身，買斷自用，享 12 個月保養',
+      listPrice: '零售價', memberPrice: '會員價', memberPriceNote: '曾租借用戶專享',
+      specs: '產品規格', notIncluded: '與共享版分別', inStock: '有現貨', outOfStock: '暫時缺貨',
+      quantity: '數量', fulfilmentTitle: '取貨方式',
+      pickupCabinet: '機櫃自取', pickupCabinetSub: '於任何 Instantcool 站點領取，免運費',
+      sfExpress: '順豐速運', sfExpressSub: '香港地址派送',
+      pickupPoint: '自取站點', subtotal: '小計', shipping: '運費', free: '免費',
+      rentToOwn: '以租轉購折扣', rentToOwnNote: '過去 {d} 日租借消費可折抵，上限 HK${m}',
+      orderTotal: '應付總額', purchaseConfirm: '確認訂單', purchased: '購買成功',
+      orderNo: '訂單編號', warranty: '保養', months: '個月',
+      purchaseHint: '付款後將收到取貨二維碼；順豐訂單約 2 個工作天送達。',
+      collectAt: '取貨地點', purchaseRecord: '購買紀錄', typeRental: '租借', typePurchase: '購買',
+      profile: '我的', wallet: '錢包', rentalHistory: '租借紀錄', promo: '優惠碼',
+      referFriend: '推薦好友', support: '客戶服務', logout: '登出', deleteAccount: '刪除帳戶',
+      member: '會員', signIn: '登入 / 註冊',
+
+      paymentMethod: '付款方式', addCard: '新增信用卡', activeHold: '生效中的預授權',
+      noHold: '暫無預授權', invoices: '交易紀錄', walletNote: '本平台由 KPay 處理付款。Instantcool 不會儲存您的完整卡號。',
+
+      historyEmpty: '尚未有租借紀錄', inProgress: '租借中', completed: '已完成', refunded: '已退款',
+      promoTitle: '優惠碼', promoPlaceholder: '輸入優惠碼', addPromo: '新增優惠碼',
+      promoTerms: '優惠不可轉讓、不可與其他優惠同時使用，未用完部分不會保留。Instantcool 保留在懷疑濫用時取消優惠的權利。',
+      promoApplied: '優惠碼已套用', promoInvalid: '優惠碼無效',
+      myCoupon: '我的推薦碼', referNote: '好友完成首次租借後，雙方各獲 30 分鐘免費使用。',
+      copyCode: '複製代碼', copied: '已複製',
+
+      faq: '常見問題', contactUs: '聯絡我們', aboutUs: '關於我們',
+      faqUse: '使用', faqPay: '付款', faqReturn: '歸還',
+
+      partner: '場地夥伴', partnerDash: '場地收益概覽',
+      todayRevenue: '今日收入', monthRevenue: '本月分成', utilisation: '使用率',
+      rentalsPerDay: '每日租借次數', cabinetStatus: '機櫃狀態', online: '在線', offline: '離線',
+      revenueShare: '場地分成 35%', last7days: '過去 7 日',
+
+      login: '登入', mobile: '手機號碼', otp: '驗證碼', sendOtp: '發送驗證碼',
+      loginNote: '登入即表示您同意租借條款及私隱政策。',
+      loginRequired: '請先登入',
+      cancel: '取消', close: '關閉', back: '返回', done: '完成', language: '語言'
+    },
+
+    en: {
+      appName: 'Instantcool', slogan: 'Scan. Cool. Go.',
+      tabHome: 'Home', tabScan: 'Scan to rent', tabProfile: 'Profile',
+
+      searchStations: 'Search nearby stations',
+      nearbyStations: 'Nearby stations', available: 'Available', returnable: 'Free slots',
+      slots: 'slots', openHours: 'Hours', navigate: 'Directions',
+      rentHere: 'Rent here', stationClosed: 'Out of service',
+      statusLive: 'Live', statusPilot: 'Pilot', statusPipeline: 'In talks',
+      demoNotice: 'Demo build: stations, orders and amounts are simulated and do not represent stations in service.',
+      mapNote: 'Schematic map — swap in Google Maps for production',
+
+      scanTitle: 'Scan to rent', scanHint: 'Point at the QR code on the cabinet',
+      scanManual: 'Enter cabinet code manually', cabinetCode: 'Cabinet code',
+      confirm: 'Confirm', simulateScan: 'Simulate scan (demo)',
+
+      rentConfirm: 'Confirm rental', ratePerHour: 'Per hour', promoRate: 'Promo rate',
+      deposit: 'Pre-authorised deposit',
+      depositNote: 'Held at pickup, released automatically on return. No funds are transferred.',
+      billingNote: 'Billed in 30-minute blocks; part blocks are charged in full.',
+      agreeTerms: 'I agree to the rental terms and privacy policy',
+      unlockNow: 'Unlock and take a fan', unlocking: 'Unlocking…', slotOpened: 'Slot {n} is open',
+
+      activeRental: 'Rental in progress', elapsed: 'Elapsed', currentCharge: 'Current charge',
+      fanSpeed: 'Fan speed', low: 'Low', mid: 'Mid', high: 'High',
+      findReturn: 'Find a return point', endRental: 'Return the fan',
+      rentedFrom: 'Picked up at', batteryLeft: 'Battery',
+
+      returnTitle: 'Return the fan', returnHint: 'Scan the QR at any station, or pick one below',
+      returnConfirm: 'Confirm return', disinfecting: 'UV-C disinfecting…',
+      returned: 'Returned', receipt: 'Receipt',
+      duration: 'Duration', totalCharge: 'Total', depositReleased: 'Deposit released',
+      backHome: 'Back to home',
+
+      shop: 'Buy a fan', shopTitle: 'Buy a fan', buyNow: 'Buy now',
+      shopEntryTitle: 'Using it a lot? Own one',
+      shopEntrySub: 'The same unit, yours to keep, 12-month warranty',
+      listPrice: 'Retail price', memberPrice: 'Member price', memberPriceNote: 'For accounts with a rental history',
+      specs: 'Specifications', notIncluded: 'How it differs from the shared unit',
+      inStock: 'In stock', outOfStock: 'Out of stock',
+      quantity: 'Quantity', fulfilmentTitle: 'Collection',
+      pickupCabinet: 'Collect at a cabinet', pickupCabinetSub: 'Any Instantcool station, no delivery fee',
+      sfExpress: 'SF Express', sfExpressSub: 'Delivered to a Hong Kong address',
+      pickupPoint: 'Collection point', subtotal: 'Subtotal', shipping: 'Delivery', free: 'Free',
+      rentToOwn: 'Rent-to-own credit', rentToOwnNote: 'Rental spend from the last {d} days, up to HK${m}',
+      orderTotal: 'Total', purchaseConfirm: 'Place order', purchased: 'Order placed',
+      orderNo: 'Order number', warranty: 'Warranty', months: ' months',
+      purchaseHint: 'You will get a collection QR after payment; SF orders arrive in about 2 working days.',
+      collectAt: 'Collect at', purchaseRecord: 'Purchases', typeRental: 'Rental', typePurchase: 'Purchase',
+      profile: 'Profile', wallet: 'Wallet', rentalHistory: 'Rental history', promo: 'Promo',
+      referFriend: 'Refer a friend', support: 'Support', logout: 'Log out', deleteAccount: 'Delete account',
+      member: 'Member', signIn: 'Sign in / Register',
+
+      paymentMethod: 'Payment method', addCard: 'Add a card', activeHold: 'Active pre-authorisation',
+      noHold: 'No active hold', invoices: 'Transactions',
+      walletNote: 'Payments are processed by KPay. Instantcool never stores your full card number.',
+
+      historyEmpty: 'No rentals yet', inProgress: 'In progress', completed: 'Completed', refunded: 'Refunded',
+      promoTitle: 'Promo', promoPlaceholder: 'Enter the promo code', addPromo: 'Add promo',
+      promoTerms: 'Promotions are non-transferable, cannot be combined, and unused portions do not roll over. Instantcool may cancel a promotion on any sign of abuse.',
+      promoApplied: 'Promo applied', promoInvalid: 'Invalid promo code',
+      myCoupon: 'Your referral code', referNote: 'When your friend completes a first rental you both get 30 free minutes.',
+      copyCode: 'Copy code', copied: 'Copied',
+
+      faq: 'FAQs', contactUs: 'Contact us', aboutUs: 'About us',
+      faqUse: 'Use', faqPay: 'Pay', faqReturn: 'Return',
+
+      partner: 'Venue partner', partnerDash: 'Venue revenue',
+      todayRevenue: 'Today', monthRevenue: 'Your share this month', utilisation: 'Utilisation',
+      rentalsPerDay: 'Rentals / day', cabinetStatus: 'Cabinets', online: 'Online', offline: 'Offline',
+      revenueShare: '35% revenue share', last7days: 'Last 7 days',
+
+      login: 'Sign in', mobile: 'Mobile number', otp: 'Verification code', sendOtp: 'Send code',
+      loginNote: 'By signing in you accept the rental terms and privacy policy.',
+      loginRequired: 'Please sign in first',
+      cancel: 'Cancel', close: 'Close', back: 'Back', done: 'Done', language: 'Language'
+    }
+  };
+
+  var locale = IC.config.runtime.defaultLocale;
+  try {
+    var saved = localStorage.getItem('ic.locale');
+    if (saved && dict[saved]) locale = saved;
+  } catch (e) { /* private mode */ }
+
+  function t(key, vars) {
+    var s = (dict[locale] && dict[locale][key]) || (dict['zh-HK'][key]) || key;
+    if (vars) Object.keys(vars).forEach(function (k) {
+      s = s.replace(new RegExp('\\{' + k + '\\}', 'g'), vars[k]);
+    });
+    return s;
+  }
+
+  return {
+    t: t,
+    get locale() { return locale; },
+    isEn: function () { return locale === 'en'; },
+    set: function (l) {
+      if (!dict[l]) return;
+      locale = l;
+      try { localStorage.setItem('ic.locale', l); } catch (e) {}
+      IC.router.refresh();
+    },
+    toggle: function () { this.set(locale === 'en' ? 'zh-HK' : 'en'); },
+    locales: Object.keys(dict)
+  };
+})();
+
+/* ==== src/lib/router.js ==== */
+/* ==========================================================================
+   router.js — hash router. Routes register themselves in IC.routes.
+   A route is: { render(params) -> HTMLElement|string, mount?(root, params),
+                 unmount?(), tab?: 'home'|'scan'|'profile', guard?: 'auth' }
+   ========================================================================== */
+window.IC = window.IC || {};
+IC.routes = IC.routes || {};
+
+IC.router = (function () {
+  var mountEl = null, current = null, currentName = null, currentParams = null;
+
+  function parse() {
+    var h = (location.hash || '#/home').replace(/^#/, '');
+    var raw = h.replace(/^\/+/, '');
+    var parts = h.split('?');
+    var path = parts[0].replace(/^\/+|\/+$/g, '') || 'home';
+    var seg = path.split('/');
+    var params = {};
+    (parts[1] || '').split('&').forEach(function (kv) {
+      if (!kv) return;
+      var p = kv.split('=');
+      params[decodeURIComponent(p[0])] = decodeURIComponent(p[1] || '');
+    });
+    if (seg.length > 1) params.id = seg.slice(1).join('/');
+    return { name: seg[0], params: params, raw: raw };
+  }
+
+  function render() {
+    var r = parse();
+    var route = IC.routes[r.name] || IC.routes.home;
+
+    if (route.guard === 'auth' && !IC.store.get().signedIn) {
+      IC.toast(IC.i18n.t('loginRequired'));
+      // Preserve the whole target route, query string included, so the user
+      // lands back on the exact station they tapped rather than a bare screen.
+      location.hash = '#/login?next=' + encodeURIComponent(r.raw);
+      return;
+    }
+
+    if (current && current.unmount) { try { current.unmount(); } catch (e) {} }
+
+    mountEl.innerHTML = '';
+    var out = route.render(r.params);
+    if (typeof out === 'string') {
+      var wrap = document.createElement('div');
+      wrap.className = 'screen';
+      wrap.innerHTML = out;
+      mountEl.appendChild(wrap);
+    } else {
+      mountEl.appendChild(out);
+    }
+
+    current = route; currentName = r.name; currentParams = r.params;
+    if (route.mount) route.mount(mountEl, r.params);
+    IC.tabbar.sync(route.tab);
+    mountEl.scrollTop = 0;
+  }
+
+  return {
+    start: function (el) {
+      mountEl = el;
+      window.addEventListener('hashchange', render);
+      render();
+    },
+    go: function (path) { location.hash = '#/' + String(path).replace(/^#?\/*/, ''); },
+    back: function () { history.length > 1 ? history.back() : IC.router.go('home'); },
+    refresh: function () { if (mountEl) render(); },
+    get current() { return currentName; },
+    get params() { return currentParams; }
+  };
+})();
+
+/* ==== src/api/fixtures.js ==== */
+/* ==========================================================================
+   fixtures.js — DEMO DATA ONLY.
+   Locations are real Hong Kong sites drawn from the target-venue list in the
+   funding deck (小巴/巴士總站, 渡輪碼頭, 康文署場地, 商場). `status` records the
+   real commercial position: as of Aug 2026 NO venue agreement is signed, so
+   every entry is 'pipeline' unless you are running a demo.
+   Set IC.config.runtime.demoData = false and swap in the live API for launch.
+   ========================================================================== */
+window.IC = window.IC || {};
+
+IC.fixtures = {
+  /* Approximate user position: Kwun Tong (first-phase focus in the proposals) */
+  me: { lat: 22.3120, lng: 114.2255 },
+
+  stations: [
+    { id:'IC-KT01', code:'884201', name_zh:'觀塘 裕民坊小巴總站', name_en:'Kwun Tong Yue Man Square Minibus Terminus',
+      addr_zh:'觀塘裕民坊 YM² 地下總站', addr_en:'G/F Terminus, YM², Yue Man Square, Kwun Tong',
+      lat:22.3132, lng:114.2262, status:'pilot', hours:'06:00 – 24:00',
+      slots:8, availableFans:5, freeSlots:3, promoUntil:'2026-10-05' },
+
+    { id:'IC-KT02', code:'884202', name_zh:'觀塘 apm 創紀之城', name_en:'apm Millennium City, Kwun Tong',
+      addr_zh:'觀塘道 418 號 apm L1 近港鐵出口', addr_en:'L1 near MTR exit, apm, 418 Kwun Tong Rd',
+      lat:22.3122, lng:114.2258, status:'pilot', hours:'11:00 – 23:00',
+      slots:8, availableFans:2, freeSlots:6, promoUntil:'2026-10-05' },
+
+    { id:'IC-KT03', code:'884203', name_zh:'觀塘海濱長廊', name_en:'Kwun Tong Promenade',
+      addr_zh:'觀塘海濱道 80 號 近入口', addr_en:'Near entrance, 80 Hoi Bun Rd, Kwun Tong',
+      lat:22.3095, lng:114.2286, status:'pipeline', hours:'07:00 – 23:00',
+      slots:8, availableFans:0, freeSlots:8 },
+
+    { id:'IC-TST01', code:'884301', name_zh:'尖沙咀 天星碼頭', name_en:'Tsim Sha Tsui Star Ferry Pier',
+      addr_zh:'尖沙咀梳士巴利道 天星碼頭候船大堂', addr_en:'Waiting hall, Star Ferry Pier, Salisbury Rd, TST',
+      lat:22.2937, lng:114.1690, status:'pipeline', hours:'06:30 – 23:30',
+      slots:8, availableFans:6, freeSlots:2 },
+
+    { id:'IC-CW01', code:'884401', name_zh:'中環 天星碼頭 7 號', name_en:'Central Pier 7, Star Ferry',
+      addr_zh:'中環民光街 天星碼頭 7 號', addr_en:'Pier 7, Man Kwong St, Central',
+      lat:22.2874, lng:114.1614, status:'pipeline', hours:'06:30 – 23:30',
+      slots:8, availableFans:4, freeSlots:4 },
+
+    { id:'IC-CWB01', code:'884501', name_zh:'銅鑼灣 維多利亞公園', name_en:'Victoria Park, Causeway Bay',
+      addr_zh:'銅鑼灣興發街 1 號 中央草坪入口', addr_en:'Central lawn entrance, 1 Hing Fat St, Causeway Bay',
+      lat:22.2823, lng:114.1889, status:'pipeline', hours:'06:00 – 23:00',
+      slots:8, availableFans:7, freeSlots:1 },
+
+    { id:'IC-MK01', code:'884601', name_zh:'旺角 朗豪坊', name_en:'Langham Place, Mong Kok',
+      addr_zh:'旺角亞皆老街 8 號 L4', addr_en:'L4, Langham Place, 8 Argyle St, Mong Kok',
+      lat:22.3183, lng:114.1686, status:'pipeline', hours:'11:00 – 23:00',
+      slots:8, availableFans:3, freeSlots:5 },
+
+    { id:'IC-ST01', code:'884701', name_zh:'沙田 新城市廣場', name_en:'New Town Plaza, Sha Tin',
+      addr_zh:'沙田正街 18 號 一期 L1', addr_en:'L1, Phase 1, 18 Sha Tin Centre St',
+      lat:22.3818, lng:114.1885, status:'pipeline', hours:'10:00 – 22:00',
+      slots:8, availableFans:8, freeSlots:0 },
+
+    { id:'IC-TM01', code:'884801', name_zh:'屯門碼頭', name_en:'Tuen Mun Ferry Pier',
+      addr_zh:'屯門湖翠路 巴士總站', addr_en:'Bus terminus, Wu Chui Rd, Tuen Mun',
+      lat:22.3720, lng:113.9720, status:'pipeline', hours:'06:00 – 23:00',
+      slots:8, availableFans:0, freeSlots:0, offline:true }
+  ],
+
+  /* A signed-in demo account */
+  user: {
+    id:'U100238', mobile:'+852 6149 3493', name_zh:'陳大文', name_en:'Tai Man Chan',
+    memberSince:'2026-06-18', referralCode:'IC-8QK2-COOL',
+    paymentMethod:{ brand:'Visa', last4:'4127', provider:'KPay' },
+    promoBalanceMinutes: 0
+  },
+
+  /* Past orders. `type` is 'rental' or 'purchase'; a missing type means rental.
+     `promo` marks the venue's first-month 75折 window. */
+  orders: [
+    { id:'P2608301402', type:'purchase', sku:'IC-FAN-STD', qty:1,
+      fulfilment:'cabinet', pickupStationId:'IC-KT02', credit:12.00,
+      amount:216.00, startedAt: Date.now() - 86400000 * 6, status:'completed' },
+    { id:'R2609041142', stationId:'IC-KT01', returnStationId:'IC-TST01',
+      startedAt: Date.now() - 86400000 * 1,  minutes: 96, promo:true,  status:'completed' },
+    { id:'R2609021805', stationId:'IC-KT02', returnStationId:'IC-KT02',
+      startedAt: Date.now() - 86400000 * 3,  minutes: 42, promo:true,  status:'completed' },
+    { id:'R2608281333', stationId:'IC-CWB01', returnStationId:'IC-CWB01',
+      startedAt: Date.now() - 86400000 * 8,  minutes: 150, promo:false, status:'completed' },
+    { id:'R2608211015', stationId:'IC-MK01', returnStationId:'IC-ST01',
+      startedAt: Date.now() - 86400000 * 15, minutes: 25, promo:false, status:'refunded' }
+  ],
+
+  /* Retail catalogue. Specs are the real ones from
+     《Instantcool 產品目錄及詳細說明書》and the ZJE0090 supplier quote. */
+  products: [{
+    sku: 'IC-FAN-STD',
+    name_zh: 'Instantcool 掛頸無葉風扇（標準版）',
+    name_en: 'Instantcool Bladeless Neck Fan (Standard)',
+    tagline_zh: '與共享網絡同款機身，買斷自用',
+    tagline_en: 'The same unit as the shared network — yours to keep',
+    inStock: true,
+    specs: [
+      { k_zh:'產品類型', k_en:'Type',      v_zh:'可穿戴頸掛式無葉風扇', v_en:'Wearable bladeless neck fan' },
+      { k_zh:'重量',     k_en:'Weight',    v_zh:'約 260 – 300 克',      v_en:'Approx. 260 – 300 g' },
+      { k_zh:'電池',     k_en:'Battery',   v_zh:'5,000 mAh 可充電鋰電池', v_en:'5,000 mAh rechargeable Li-ion' },
+      { k_zh:'續航',     k_en:'Runtime',   v_zh:'約 2 – 4 小時（視乎檔位）', v_en:'2 – 4 hours depending on speed' },
+      { k_zh:'風速檔位', k_en:'Speeds',    v_zh:'3 段（低 / 中 / 高）',  v_en:'3 (low / mid / high)' },
+      { k_zh:'充電',     k_en:'Charging',  v_zh:'Type-C，約 60 – 90 分鐘', v_en:'Type-C, approx. 60 – 90 min' },
+      { k_zh:'設計',     k_en:'Design',    v_zh:'無葉片，避免夾髮',       v_en:'Bladeless — no hair-catch risk' }
+    ],
+    /* Retail units ship without the shared-fleet hardware: no locator module,
+       no cabinet contact pins. Worth stating plainly so a buyer who has used
+       the shared service knows exactly what differs. */
+    notIncluded_zh: '零售版不含防盜定位模組及機櫃觸點充電，改用 Type-C 充電。',
+    notIncluded_en: 'Retail units omit the locator module and cabinet charging pins; they charge over Type-C.'
+  }],
+
+  /* Partner-dashboard series: rentals per cabinet per day, last 7 days. */
+  partner: {
+    venueName_zh:'觀塘 裕民坊小巴總站', venueName_en:'Kwun Tong Yue Man Square Terminus',
+    cabinets: [
+      { id:'IC-KT01-A', online:true,  slots:8, fans:5 },
+      { id:'IC-KT01-B', online:true,  slots:8, fans:2 },
+      { id:'IC-KT01-C', online:false, slots:8, fans:0 }
+    ],
+    dailyRentalsPerCabinet: [4.2, 5.0, 5.6, 4.6, 6.4, 7.1, 5.9]
+  },
+
+  /* Support content, grouped like Yellowpal's FAQ (Use / Pay / Return). */
+  faq: [
+    { group:'faqUse', items:[
+      { q_zh:'我需要下載應用程式才可以借用嗎？', q_en:'Do I need to download an app?',
+        a_zh:'不需要。掃描機櫃上的二維碼即可在手機瀏覽器完成借用及歸還，無需繁複註冊。',
+        a_en:'No. Scan the QR code on the cabinet and complete the rental in your mobile browser — no lengthy sign-up.' },
+      { q_zh:'風扇如何確保衛生？', q_en:'How is hygiene handled?',
+        a_zh:'每次歸還後，機櫃會在格口內自動進行紫外光（UV-C）消毒殺菌，之後才供下一位使用者借用。',
+        a_en:'After every return the cabinet runs an automatic UV-C disinfection cycle in the slot before the fan is offered again.' },
+      { q_zh:'風扇可以用多久？', q_en:'How long does a fan last?',
+        a_zh:'視乎風速檔位，續航約 2 至 4 小時。機櫃內設觸點式自動充電。',
+        a_en:'About 2–4 hours depending on the speed setting. Fans recharge automatically on contact pins inside the cabinet.' }
+    ]},
+    { group:'faqPay', items:[
+      { q_zh:'如何收費？', q_en:'How am I charged?',
+        a_zh:'每小時港幣 8 元，以每 30 分鐘為一節計算，不足一節作一節計。新場地首月推廣價為每小時港幣 6 元。',
+        a_en:'HK$8 per hour, billed in 30-minute blocks with part blocks charged in full. New venues run a HK$6/hour promotion in their first month.' },
+      { q_zh:'為何會凍結港幣 100 元？', q_en:'Why is HK$100 held on my card?',
+        a_zh:'借用時以信用卡預授權方式凍結港幣 100 元作按金。款項不會過戶至 Instantcool，歸還並確認設備狀態後自動解除。',
+        a_en:'A HK$100 pre-authorisation is placed as a deposit. The money never transfers to Instantcool and the hold is released once the fan is returned and checked.' },
+      { q_zh:'為何訂單仍顯示「租借中」？', q_en:'Why is my order still in progress?',
+        a_zh:'機櫃需確認風扇已正確放回及鎖好。若關門後 5 分鐘仍未更新，請聯絡客戶服務並提供訂單編號。',
+        a_en:'The cabinet must confirm the fan is seated and locked. If nothing updates 5 minutes after closing the door, contact support with your order number.' }
+    ]},
+    { group:'faqReturn', items:[
+      { q_zh:'可以在其他站點歸還嗎？', q_en:'Can I return it to another station?',
+        a_zh:'可以。任何一部 Instantcool 機櫃都可歸還，只要該機櫃仍有空置格口。',
+        a_en:'Yes. Return to any Instantcool cabinet that still has a free slot.' },
+      { q_zh:'歸還時格口滿了怎麼辦？', q_en:'What if every slot is full?',
+        a_zh:'請於應用內查看附近仍有空格的站點；系統會在您前往期間暫停計費最多 15 分鐘。',
+        a_en:'Check the app for a nearby station with free slots — billing pauses for up to 15 minutes while you travel there.' },
+      { q_zh:'如果沒有歸還會怎樣？', q_en:'What if I never return it?',
+        a_zh:'系統設有定位及機櫃鎖感應。超時未歸還將從預授權按金中扣除設備費用，長時間未歸還會由設備團隊跟進。',
+        a_en:'Fans carry a locator module. An overdue rental is charged against the pre-authorised deposit and the operations team follows up.' }
+    ]}
+  ]
+};
+
+/* ==== src/api/kpay.js ==== */
+/* ==========================================================================
+   kpay.js — payment adapter.
+   Instantcool never touches a full card number: KPay hosts the card form and
+   holds the HK$100 pre-authorisation. This module is the ONLY seam between the
+   app and the PSP, so swapping provider means rewriting this file alone.
+
+   PRODUCTION CONTRACT — the four calls the backend must expose:
+     POST /payments/preauth   { amount, orderId }        -> { holdId, status }
+     POST /payments/capture   { holdId, amount }         -> { txnId, captured }
+     POST /payments/release   { holdId }                 -> { released }
+     POST /payments/methods   (redirect to KPay hosted form)
+   Amounts are integers in cents server-side. Never compute a final charge in
+   the browser — the client figure is an estimate, the cabinet's clock is truth.
+   ========================================================================== */
+window.IC = window.IC || {};
+
+IC.kpay = (function () {
+  var mock = function () { return IC.config.runtime.apiMode === 'mock'; };
+
+  return {
+    /** Freeze the deposit. Resolves to a hold id used at capture/release. */
+    preauth: function (amount, orderId) {
+      if (mock()) {
+        return IC.util.delay(700).then(function () {
+          return { holdId: 'HOLD_' + orderId, amount: amount, status: 'held' };
+        });
+      }
+      return IC.api.post('/payments/preauth', { amount: amount, orderId: orderId });
+    },
+
+    /** Take the actual rental fee out of the hold, then free the remainder. */
+    capture: function (holdId, amount) {
+      if (mock()) {
+        return IC.util.delay(600).then(function () {
+          return { txnId: 'TXN_' + Date.now(), captured: amount, holdId: holdId };
+        });
+      }
+      return IC.api.post('/payments/capture', { holdId: holdId, amount: amount });
+    },
+
+    /** Release the whole hold (cancelled rental, or a zero-charge return). */
+    release: function (holdId) {
+      if (mock()) {
+        return IC.util.delay(400).then(function () { return { holdId: holdId, released: true }; });
+      }
+      return IC.api.post('/payments/release', { holdId: holdId });
+    },
+
+    /** A straight charge — used by retail, where nothing is held first.
+        POST /payments/charge { amount, orderId } -> { txnId, charged } */
+    charge: function (amount, orderId) {
+      if (mock()) {
+        return IC.util.delay(800).then(function () {
+          return { txnId: 'TXN_' + orderId, charged: amount };
+        });
+      }
+      return IC.api.post('/payments/charge', { amount: amount, orderId: orderId });
+    }
+  };
+})();
+
+/* ==== src/api/client.js ==== */
+/* ==========================================================================
+   client.js — the app's data layer.
+   Every view talks to IC.api and nothing else. In 'mock' mode calls are served
+   from fixtures with realistic latency; in 'live' mode the same method names
+   hit the REST endpoints documented in docs/API-SPEC.md.
+   ========================================================================== */
+window.IC = window.IC || {};
+
+IC.api = (function () {
+  var mock = function () { return IC.config.runtime.apiMode === 'mock'; };
+  var base = function () { return IC.config.runtime.apiBaseUrl; };
+
+  function request(method, path, body) {
+    return fetch(base() + path, {
+      method: method,
+      headers: { 'Content-Type': 'application/json', 'Accept-Language': IC.i18n.locale },
+      credentials: 'include',
+      body: body ? JSON.stringify(body) : undefined
+    }).then(function (r) {
+      if (!r.ok) throw Object.assign(new Error('HTTP ' + r.status), { status: r.status });
+      return r.status === 204 ? null : r.json();
+    });
+  }
+
+  /* Mutable copy of the fixtures so the demo can actually change state. */
+  var db = null;
+  function seed() {
+    if (!db) db = JSON.parse(JSON.stringify(IC.fixtures));
+    return db;
+  }
+
+  var api = {
+    get: function (p) { return request('GET', p); },
+    post: function (p, b) { return request('POST', p, b); },
+
+    /* ---- stations ---- */
+    listStations: function () {
+      if (mock()) return IC.util.delay(220).then(function () { return seed().stations; });
+      return api.get('/stations');
+    },
+
+    getStation: function (id) {
+      if (mock()) return IC.util.delay(120).then(function () {
+        return seed().stations.filter(function (s) { return s.id === id; })[0] || null;
+      });
+      return api.get('/stations/' + encodeURIComponent(id));
+    },
+
+    /** Cabinet codes are what a user types when the QR will not scan. */
+    findByCode: function (code) {
+      if (mock()) return IC.util.delay(300).then(function () {
+        return seed().stations.filter(function (s) { return s.code === String(code).trim(); })[0] || null;
+      });
+      return api.get('/cabinets/' + encodeURIComponent(code));
+    },
+
+    /* ---- session ---- */
+    getUser: function () {
+      if (mock()) return IC.util.delay(80).then(function () {
+        return IC.store.get().signedIn ? seed().user : null;
+      });
+      return api.get('/me');
+    },
+
+    /* ---- rentals ---- */
+    /**
+     * Open a slot and start the clock. The backend is authoritative: it places
+     * the KPay hold, commands the cabinet over its IoT channel, and only then
+     * returns the rental. The UI must never start a timer before this resolves.
+     */
+    startRental: function (stationId) {
+      if (mock()) {
+        var st = seed().stations.filter(function (s) { return s.id === stationId; })[0];
+        if (!st) return Promise.reject(new Error('station_not_found'));
+        if (!st.availableFans) return Promise.reject(new Error('no_fans_available'));
+        var orderId = 'R' + Date.now().toString().slice(-10);
+        return IC.kpay.preauth(IC.config.pricing.preAuthDeposit, orderId).then(function (hold) {
+          return IC.util.delay(500).then(function () {
+            st.availableFans -= 1; st.freeSlots += 1;
+            return {
+              id: orderId, stationId: stationId, slot: 1 + Math.floor(Math.random() * st.slots),
+              startedAt: Date.now(), promo: isPromo(st), holdId: hold.holdId,
+              fanId: 'FAN-' + Math.random().toString(36).slice(2, 7).toUpperCase(),
+              battery: 78 + Math.floor(Math.random() * 20), speed: 2, status: 'active'
+            };
+          });
+        });
+      }
+      return api.post('/rentals', { stationId: stationId });
+    },
+
+    /** Close the rental at a (possibly different) station. */
+    endRental: function (rental, returnStationId) {
+      if (mock()) {
+        var st = seed().stations.filter(function (s) { return s.id === returnStationId; })[0];
+        var mins = (Date.now() - rental.startedAt) / 60000;
+        var q = IC.pricing.quote(mins, rental.promo);
+        return IC.kpay.capture(rental.holdId, q.gross).then(function (txn) {
+          return IC.util.delay(IC.config.hardware.uvDisinfectSeconds * 10).then(function () {
+            if (st) { st.availableFans += 1; st.freeSlots = Math.max(0, st.freeSlots - 1); }
+            var order = {
+              id: rental.id, stationId: rental.stationId, returnStationId: returnStationId,
+              startedAt: rental.startedAt, endedAt: Date.now(), minutes: mins,
+              promo: rental.promo, amount: q.gross, txnId: txn.txnId, status: 'completed'
+            };
+            seed().orders.unshift(order);
+            return order;
+          });
+        });
+      }
+      return api.post('/rentals/' + encodeURIComponent(rental.id) + '/return',
+                      { stationId: returnStationId });
+    },
+
+    setSpeed: function (rentalId, speed) {
+      if (mock()) return IC.util.delay(150).then(function () { return { speed: speed }; });
+      return api.post('/rentals/' + encodeURIComponent(rentalId) + '/speed', { speed: speed });
+    },
+
+    /* ---- history & extras ---- */
+    listOrders: function () {
+      if (mock()) return IC.util.delay(200).then(function () { return seed().orders; });
+      return api.get('/orders');
+    },
+
+    applyPromo: function (code) {
+      if (mock()) return IC.util.delay(500).then(function () {
+        var ok = /^(COOL|IC)[A-Z0-9]{2,}$/i.test(String(code).trim());
+        if (!ok) throw new Error('promo_invalid');
+        return { code: code, minutes: 30 };
+      });
+      return api.post('/promos', { code: code });
+    },
+
+    /* ---- retail 零售 ---- */
+    listProducts: function () {
+      if (mock()) return IC.util.delay(200).then(function () { return seed().products; });
+      return api.get('/products');
+    },
+
+    /**
+     * How much this account spent renting inside the rent-to-own window.
+     * The server must compute this in production — a client-side figure is
+     * trivially forgeable and it turns into a discount.
+     */
+    rentalSpendInWindow: function () {
+      var days = IC.config.retail.rentToOwn.windowDays;
+      if (mock()) {
+        return IC.util.delay(120).then(function () {
+          var since = Date.now() - days * 86400000;
+          return seed().orders.reduce(function (sum, o) {
+            if (o.type === 'purchase' || o.status !== 'completed') return sum;
+            if (o.startedAt < since) return sum;
+            var amt = o.amount != null ? o.amount : IC.pricing.quote(o.minutes, o.promo).gross;
+            return sum + amt;
+          }, 0);
+        });
+      }
+      return api.get('/me/rental-spend?window_days=' + days).then(function (r) { return r.amount; });
+    },
+
+    /**
+     * Buy a fan outright. Unlike a rental this is a straight charge, so the
+     * order is created first and only marked paid once KPay confirms.
+     */
+    createPurchase: function (o) {
+      if (mock()) {
+        var orderId = 'P' + Date.now().toString().slice(-10);
+        return IC.kpay.charge(o.total, orderId).then(function (txn) {
+          var order = {
+            id: orderId, type: 'purchase', sku: o.sku, qty: o.qty,
+            fulfilment: o.fulfilment, pickupStationId: o.pickupStationId || null,
+            credit: o.credit, amount: o.total, txnId: txn.txnId,
+            startedAt: Date.now(), status: 'completed'
+          };
+          seed().orders.unshift(order);
+          return order;
+        });
+      }
+      return api.post('/purchases', o);
+    },
+
+    partnerSummary: function () {
+      if (mock()) return IC.util.delay(260).then(function () { return seed().partner; });
+      return api.get('/partner/summary');
+    }
+  };
+
+  /** A venue is inside its first-month 75折 window. */
+  function isPromo(station) {
+    return !!(station.promoUntil && new Date(station.promoUntil).getTime() > Date.now());
+  }
+  api.isPromo = isPromo;
+
+  return api;
+})();
+
+/* ==== src/components/icons.js ==== */
+/* icons.js — inline SVG set. IC.icon('name') returns a string. */
+window.IC = window.IC || {};
+
+IC.icon = (function () {
+  var S = 'xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" ' +
+          'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"';
+  var set = {
+    home:'<path d="M3 10.2 12 3l9 7.2V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+    scan:'<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M4 12h16"/>',
+    user:'<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>',
+    search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/>',
+    fan:'<circle cx="12" cy="12" r="2.2"/><path d="M12 9.8c0-3.4.9-5.8 3-5.8s3 2.4 1.2 4.6c-1.2 1.5-2.9 1.9-4.2 1.2M14.2 12c3.4 0 5.8.9 5.8 3s-2.4 3-4.6 1.2c-1.5-1.2-1.9-2.9-1.2-4.2M12 14.2c0 3.4-.9 5.8-3 5.8s-3-2.4-1.2-4.6c1.2-1.5 2.9-1.9 4.2-1.2M9.8 12c-3.4 0-5.8-.9-5.8-3s2.4-3 4.6-1.2c1.5 1.2 1.9 2.9 1.2 4.2"/>',
+    snow:'<path d="M12 2v20M4.5 6.5 19.5 17.5M19.5 6.5 4.5 17.5"/><path d="M12 6.6 9.6 4.6M12 6.6l2.4-2M12 17.4l-2.4 2M12 17.4l2.4 2"/>',
+    wallet:'<path d="M3 8.5A2.5 2.5 0 0 1 5.5 6H18a2 2 0 0 1 2 2v1"/><rect x="3" y="8.5" width="18" height="11" rx="2.2"/><circle cx="16.5" cy="14" r="1.2" fill="currentColor" stroke="none"/>',
+    clock:'<circle cx="12" cy="12" r="8.6"/><path d="M12 7.2V12l3 1.8"/>',
+    gift:'<rect x="3.5" y="9" width="17" height="11.5" rx="1.6"/><path d="M3.5 13h17M12 9v11.5"/><path d="M12 9C10.5 5.5 8.8 4 7.4 4.6 6 5.3 6.4 8 9 9M12 9c1.5-3.5 3.2-5 4.6-4.4C18 5.3 17.6 8 15 9"/>',
+    users:'<circle cx="9" cy="8.5" r="3.2"/><path d="M3 19.5a6 6 0 0 1 12 0"/><path d="M16 5.6a3.2 3.2 0 0 1 0 6M17.5 14.2A6 6 0 0 1 21 19.5"/>',
+    help:'<circle cx="12" cy="12" r="8.6"/><path d="M9.7 9.4a2.4 2.4 0 1 1 3.2 2.3c-.6.2-.9.8-.9 1.5"/><circle cx="12" cy="16.6" r=".9" fill="currentColor" stroke="none"/>',
+    logout:'<path d="M14 20H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h8"/><path d="m17 15 3-3-3-3M20 12H10"/>',
+    trash:'<path d="M4.5 7h15M9.5 7V5.2A1.2 1.2 0 0 1 10.7 4h2.6a1.2 1.2 0 0 1 1.2 1.2V7"/><path d="M6.5 7 7.4 20h9.2L17.5 7"/>',
+    chev:'<path d="m9 5 7 7-7 7"/>',
+    back:'<path d="m15 5-7 7 7 7"/>',
+    pin:'<path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/>',
+    locate:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5V5M12 19v2.5M21.5 12H19M5 12H2.5"/>',
+    layers:'<rect x="3.6" y="3.6" width="7" height="7" rx="1.6"/><rect x="13.4" y="3.6" width="7" height="7" rx="1.6"/><rect x="3.6" y="13.4" width="7" height="7" rx="1.6"/><rect x="13.4" y="13.4" width="7" height="7" rx="1.6"/>',
+    check:'<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+    shield:'<path d="M12 3.2 19 6v5.6c0 4.3-2.9 7.6-7 9.2-4.1-1.6-7-4.9-7-9.2V6z"/><path d="m9 12 2.2 2.2L15.4 10"/>',
+    battery:'<rect x="2.5" y="7.5" width="16" height="9" rx="2"/><path d="M21 10.5v3"/>',
+    chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+    globe:'<circle cx="12" cy="12" r="8.6"/><path d="M3.6 12h16.8M12 3.4c2.2 2.4 3.3 5.4 3.3 8.6S14.2 18.2 12 20.6c-2.2-2.4-3.3-5.4-3.3-8.6S9.8 5.8 12 3.4z"/>',
+    warn:'<path d="M12 4.5 21 19.5H3z"/><path d="M12 10v4"/><circle cx="12" cy="16.8" r=".9" fill="currentColor" stroke="none"/>',
+    copy:'<rect x="8.5" y="8.5" width="11.5" height="11.5" rx="2"/><path d="M15.5 5.5H6a1.5 1.5 0 0 0-1.5 1.5v9.5"/>',
+    box:'<path d="M3.5 7.5 12 3.5l8.5 4v9L12 20.5l-8.5-4z"/><path d="M3.5 7.5 12 11.5l8.5-4M12 11.5v9"/>'
+  };
+  return function (name, cls) {
+    var p = set[name];
+    if (!p) return '';
+    return '<svg ' + S + (cls ? ' class="' + cls + '"' : '') + '>' + p + '</svg>';
+  };
+})();
+
+/* ==== src/components/ui.js ==== */
+/* ui.js — shared chrome: top bar, tab bar, toast, sheet, list rows. */
+window.IC = window.IC || {};
+
+/* ---------- toast --------------------------------------------------------- */
+IC.toast = function (msg, ms) {
+  var app = document.getElementById('app');
+  var old = app.querySelector('.toast');
+  if (old) old.remove();
+  var t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  app.appendChild(t);
+  setTimeout(function () { t.remove(); }, ms || 2200);
+};
+
+/* ---------- top bar ------------------------------------------------------- */
+IC.topbar = function (title, opts) {
+  opts = opts || {};
+  var left = opts.back === false ? '<div class="topbar__side"></div>'
+    : '<div class="topbar__side"><button class="iconbtn" data-act="back" aria-label="' +
+      IC.i18n.t('back') + '">' + IC.icon('back') + '</button></div>';
+  var right = opts.right || '<div class="topbar__side"></div>';
+  return '<header class="topbar">' + left +
+         '<div class="topbar__title">' + IC.util.esc(title) + '</div>' + right + '</header>';
+};
+
+/* Language toggle, used in the top-right of Profile. */
+IC.langBtn = function () {
+  return '<div class="topbar__side"><button class="iconbtn" data-act="lang" aria-label="' +
+         IC.i18n.t('language') + '">' + IC.icon('globe') + '</button></div>';
+};
+
+/* ---------- list row ------------------------------------------------------ */
+IC.row = function (o) {
+  return '<button class="row ' + (o.danger ? 'row--danger' : '') + '" data-act="' +
+    IC.util.esc(o.act) + '"' + (o.value ? ' data-value="' + IC.util.esc(o.value) + '"' : '') + '>' +
+    (o.icon ? '<span class="row__icon">' + IC.icon(o.icon) + '</span>' : '') +
+    '<span class="row__main"><span class="row__title">' + IC.util.esc(o.title) + '</span>' +
+    (o.sub ? '<span class="row__sub">' + IC.util.esc(o.sub) + '</span>' : '') + '</span>' +
+    (o.tag || '') +
+    '<span class="row__chev">' + IC.icon('chev') + '</span></button>';
+};
+
+/* ---------- demo banner --------------------------------------------------- */
+IC.demoBanner = function () {
+  if (!IC.config.runtime.demoData) return '';
+  // i18n holds the public-safe wording. Internal builds add a fuller notice via
+  // config.runtime.demoNoticeOverride, which the public config simply omits —
+  // so the private text is never compiled into a public bundle.
+  var ov = IC.config.runtime.demoNoticeOverride;
+  var text = (ov && (ov[IC.i18n.locale] || ov['zh-HK'])) || IC.i18n.t('demoNotice');
+  return '<div class="demo-flag">' + IC.util.esc(text) + '</div>';
+};
+
+/* ---------- bottom sheet -------------------------------------------------- */
+IC.sheet = {
+  open: function (html, onMount) {
+    IC.sheet.close();
+    var app = document.getElementById('app');
+    var scrim = document.createElement('div');
+    scrim.className = 'modal-scrim';
+    scrim.addEventListener('click', IC.sheet.close);
+    var s = document.createElement('div');
+    s.className = 'sheet';
+    s.innerHTML = '<div class="sheet__grip"></div><div class="sheet__body">' + html + '</div>';
+    app.appendChild(scrim); app.appendChild(s);
+    IC.util.on(s, '[data-act="sheet-close"]', IC.sheet.close);
+    if (onMount) onMount(s);
+    return s;
+  },
+  close: function () {
+    IC.util.els('#app .sheet, #app .modal-scrim').forEach(function (n) { n.remove(); });
+  }
+};
+
+/* ---------- tab bar ------------------------------------------------------- */
+IC.tabbar = (function () {
+  var node = null;
+
+  function html() {
+    return '' +
+      '<button class="tab" data-tab="home">' + IC.icon('home') +
+        '<span>' + IC.i18n.t('tabHome') + '</span></button>' +
+      '<button class="tab tab--scan" data-tab="scan">' +
+        '<span class="fab">' + IC.icon('scan') + '</span>' +
+        '<span>' + IC.i18n.t('tabScan') + '</span></button>' +
+      '<button class="tab" data-tab="profile">' + IC.icon('user') +
+        '<span>' + IC.i18n.t('tabProfile') + '</span></button>';
+  }
+
+  return {
+    mount: function (app) {
+      node = document.createElement('nav');
+      node.className = 'tabbar';
+      node.innerHTML = html();
+      app.appendChild(node);
+      IC.util.on(node, '[data-tab]', function (e, el) {
+        var tab = el.getAttribute('data-tab');
+        // Tapping "scan" while a rental is running goes to the live rental.
+        if (tab === 'scan' && IC.store.get().rental) return IC.router.go('rental');
+        IC.router.go(tab);
+      });
+    },
+    sync: function (active) {
+      if (!node) return;
+      node.innerHTML = html();          // re-render so locale changes apply
+      IC.util.els('.tab', node).forEach(function (t) {
+        t.classList.toggle('is-active', t.getAttribute('data-tab') === active);
+      });
+    }
+  };
+})();
+
+/* ==== src/components/map.js ==== */
+/* ==========================================================================
+   map.js — pluggable map surface.
+
+   Two providers behind one interface, chosen by IC.config.runtime.mapProvider:
+
+     'schematic' (default)  Dependency-free. Projects lat/lng onto a stylised
+                            Hong Kong backdrop. No API key, no network, works
+                            offline and inside a strict CSP. Good enough for
+                            demos, pitches and layout work.
+     'google'               Stub. Drop the Maps JS API in and implement the
+                            three methods marked TODO — nothing else changes.
+
+   Interface: render(container, { stations, me, onSelect, activeId })
+   ========================================================================== */
+window.IC = window.IC || {};
+
+IC.map = (function () {
+  /* Bounding box covering the served territory (Tuen Mun -> Sai Kung). */
+  var BOX = { west: 113.90, east: 114.32, south: 22.20, north: 22.52 };
+
+  function project(pt, w, h) {
+    var x = (pt.lng - BOX.west) / (BOX.east - BOX.west);
+    var y = 1 - (pt.lat - BOX.south) / (BOX.north - BOX.south);
+    return { x: Math.max(0.04, Math.min(0.96, x)) * w,
+             y: Math.max(0.06, Math.min(0.9, y)) * h };
+  }
+
+  /* --- stylised HK landmass. Deliberately abstract: it reads as a map
+         without pretending to be survey-accurate. --- */
+  function backdrop() {
+    return '' +
+    '<svg class="map__svg" viewBox="0 0 420 620" preserveAspectRatio="none" aria-hidden="true">' +
+      '<defs>' +
+        '<linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0" stop-color="#0B1A28"/><stop offset="1" stop-color="#081320"/>' +
+        '</linearGradient>' +
+        '<linearGradient id="land" x1="0" y1="0" x2="1" y2="1">' +
+          '<stop offset="0" stop-color="#16202C"/><stop offset="1" stop-color="#111A24"/>' +
+        '</linearGradient>' +
+      '</defs>' +
+      '<rect width="420" height="620" fill="url(#sea)"/>' +
+      // New Territories
+      '<path d="M-10 40 L430 20 L430 300 Q330 320 250 300 Q180 285 120 305 Q60 320 -10 300 Z" fill="url(#land)"/>' +
+      // Kowloon peninsula
+      '<path d="M120 300 Q200 292 270 302 L282 372 Q210 392 140 378 Z" fill="url(#land)"/>' +
+      // Hong Kong Island
+      '<path d="M150 420 Q245 402 330 424 Q352 452 322 486 Q235 512 158 484 Q128 452 150 420 Z" fill="url(#land)"/>' +
+      // Lantau
+      '<path d="M-10 380 Q60 356 128 382 Q142 424 96 448 Q28 462 -10 436 Z" fill="url(#land)"/>' +
+      // roads
+      '<g stroke="rgba(255,255,255,.055)" stroke-width="2" fill="none">' +
+        '<path d="M40 120 Q180 96 400 140"/><path d="M60 210 Q210 190 410 230"/>' +
+        '<path d="M150 300 L182 378"/><path d="M240 302 L262 372"/>' +
+        '<path d="M180 440 Q250 424 320 448"/>' +
+      '</g>' +
+      // harbour label
+      '<text x="210" y="404" text-anchor="middle" fill="rgba(255,255,255,.16)" ' +
+        'font-size="12" font-family="sans-serif" letter-spacing="3">VICTORIA HARBOUR</text>' +
+    '</svg>';
+  }
+
+  var schematic = {
+    render: function (container, o) {
+      var w = container.clientWidth || 400, h = container.clientHeight || 600;
+      container.innerHTML = backdrop();
+
+      (o.stations || []).forEach(function (s) {
+        var p = project(s, w, h);
+        var mod = s.status === 'pipeline' ? ' map__pin--pipeline'
+                : s.status === 'pilot' ? ' map__pin--pilot' : '';
+        var pin = document.createElement('button');
+        pin.className = 'map__pin' + mod + (o.activeId === s.id ? ' is-active' : '');
+        pin.style.left = p.x + 'px';
+        pin.style.top = p.y + 'px';
+        pin.setAttribute('aria-label', IC.i18n.isEn() ? s.name_en : s.name_zh);
+        pin.innerHTML = '<span class="dot">' + IC.icon('fan') + '</span>';
+        pin.addEventListener('click', function () { o.onSelect && o.onSelect(s); });
+        container.appendChild(pin);
+      });
+
+      if (o.me) {
+        var m = project(o.me, w, h);
+        var dot = document.createElement('div');
+        dot.className = 'map__me';
+        dot.style.left = m.x + 'px';
+        dot.style.top = m.y + 'px';
+        container.appendChild(dot);
+      }
+
+      var note = document.createElement('div');
+      note.className = 'map__note';
+      note.textContent = IC.i18n.t('mapNote');
+      container.appendChild(note);
+    }
+  };
+
+  /* --- Google Maps provider ------------------------------------------------
+     To enable:
+       1. IC.config.runtime.mapProvider = 'google'
+       2. IC.config.runtime.googleMapsApiKey = '...'
+       3. Add the Maps JS loader to index.html (it is intentionally absent so
+          the default build makes no third-party requests).
+       4. Implement the three TODOs below.
+     Keep the same signature and every caller keeps working.                */
+  var google = {
+    render: function (container, o) {
+      if (!window.google || !window.google.maps) {
+        container.innerHTML = '<div class="empty">' + IC.icon('warn') +
+          '<div>Google Maps JS API not loaded — falling back to the schematic map.</div></div>';
+        return schematic.render(container, o);
+      }
+      // TODO 1: new google.maps.Map(container, { center, zoom, styles })
+      // TODO 2: an AdvancedMarkerElement per station, click -> o.onSelect(s)
+      // TODO 3: a marker for o.me, and recentre on the locate button
+    }
+  };
+
+  return {
+    render: function (container, o) {
+      var p = IC.config.runtime.mapProvider === 'google' ? google : schematic;
+      return p.render(container, o);
+    },
+    project: project
+  };
+})();
+
+/* ==== src/views/home.js ==== */
+/* home.js — map + nearby station list. Mirrors Yellowpal's map home. */
+window.IC = window.IC || {};
+
+IC.routes.home = (function () {
+  var stations = [], activeId = null, mapEl = null, ro = null;
+
+  function statusTag(s) {
+    if (s.offline) return '<span class="tag tag--warn">' + IC.i18n.t('stationClosed') + '</span>';
+    var k = s.status === 'live' ? 'live' : s.status === 'pilot' ? 'pilot' : 'pipeline';
+    var label = s.status === 'live' ? 'statusLive' : s.status === 'pilot' ? 'statusPilot' : 'statusPipeline';
+    return '<span class="tag tag--' + k + '">' + IC.i18n.t(label) + '</span>';
+  }
+
+  function name(s) { return IC.i18n.isEn() ? s.name_en : s.name_zh; }
+  function addr(s) { return IC.i18n.isEn() ? s.addr_en : s.addr_zh; }
+
+  function stationRow(s) {
+    var d = IC.util.distanceKm(IC.fixtures.me, s);
+    return '<button class="station" data-act="station" data-id="' + IC.util.esc(s.id) + '">' +
+      '<span class="station__badge">' + IC.icon('box') + '</span>' +
+      '<span class="row__main">' +
+        '<span class="spread"><span class="row__title">' + IC.util.esc(name(s)) + '</span>' +
+        statusTag(s) + '</span>' +
+        '<span class="row__sub">' + IC.util.esc(addr(s)) + ' · ' + IC.util.distanceLabel(d) + '</span>' +
+        '<span class="station__meta">' +
+          '<span class="stat stat--out">' + IC.i18n.t('available') + ' <b>' + s.availableFans + '</b></span>' +
+          '<span class="stat stat--in">' + IC.i18n.t('returnable') + ' <b>' + s.freeSlots + '</b></span>' +
+          (IC.api.isPromo(s) ? '<span class="tag tag--pilot">' + IC.i18n.t('promoRate') +
+             ' ' + IC.util.money(IC.config.pricing.promoRatePerHour) + '</span>' : '') +
+        '</span>' +
+      '</span></button>';
+  }
+
+  function openStation(s) {
+    activeId = s.id;
+    drawMap();
+    var promo = IC.api.isPromo(s);
+    var rate = promo ? IC.config.pricing.promoRatePerHour : IC.config.pricing.ratePerHour;
+    var disabled = s.offline || !s.availableFans;
+
+    IC.sheet.open(
+      '<div class="spread"><h2 class="h1" style="font-size:19px;margin:0">' +
+        IC.util.esc(name(s)) + '</h2>' + statusTag(s) + '</div>' +
+      '<p class="muted" style="margin:6px 0 12px">' + IC.util.esc(addr(s)) + '</p>' +
+      '<div class="card card--flat">' +
+        '<div class="kv"><span>' + IC.i18n.t('available') + '</span><b>' + s.availableFans + ' / ' + s.slots + '</b></div>' +
+        '<div class="kv"><span>' + IC.i18n.t('returnable') + '</span><b>' + s.freeSlots + ' ' + IC.i18n.t('slots') + '</b></div>' +
+        '<div class="kv"><span>' + IC.i18n.t('openHours') + '</span><b>' + IC.util.esc(s.hours) + '</b></div>' +
+        '<div class="kv"><span>' + IC.i18n.t('ratePerHour') + '</span><b>' + IC.util.money(rate) +
+          (promo ? ' <span class="tag tag--pilot">' + IC.i18n.t('promoRate') + '</span>' : '') + '</b></div>' +
+        '<div class="kv"><span>' + IC.i18n.t('cabinetCode') + '</span><b>' + IC.util.esc(s.code) + '</b></div>' +
+      '</div>' +
+      '<div class="stack" style="margin-top:14px">' +
+        '<button class="btn" data-act="rent" data-id="' + IC.util.esc(s.id) + '"' +
+          (disabled ? ' disabled' : '') + '>' + IC.icon('scan') + ' ' + IC.i18n.t('rentHere') + '</button>' +
+        '<button class="btn btn--ghost" data-act="nav" data-id="' + IC.util.esc(s.id) + '">' +
+          IC.icon('pin') + ' ' + IC.i18n.t('navigate') + '</button>' +
+      '</div>',
+      function (sheet) {
+        IC.util.on(sheet, '[data-act="rent"]', function () {
+          IC.sheet.close();
+          IC.router.go('rent?station=' + s.id);
+        });
+        IC.util.on(sheet, '[data-act="nav"]', function () {
+          // Hands off to the OS map app rather than embedding a routing engine.
+          window.open('https://maps.apple.com/?daddr=' + s.lat + ',' + s.lng, '_blank');
+        });
+      }
+    );
+  }
+
+  function drawMap() {
+    if (!mapEl) return;
+    IC.map.render(mapEl, {
+      stations: stations, me: IC.fixtures.me, activeId: activeId,
+      onSelect: openStation
+    });
+  }
+
+  return {
+    tab: 'home',
+
+    render: function () {
+      return '' +
+        '<div class="screen__body screen__body--flush">' +
+          '<div style="position:relative;height:58%;min-height:300px">' +
+            '<div class="map" id="ic-map"></div>' +
+            '<div class="map__overlay">' +
+              '<div class="searchbar" data-act="search">' + IC.icon('search') +
+                '<span>' + IC.i18n.t('searchStations') + '</span></div>' +
+              '<div class="map__ctl">' +
+                '<button class="iconbtn" data-act="layers">' + IC.icon('layers') + '</button>' +
+                '<button class="iconbtn" data-act="locate">' + IC.icon('locate') + '</button>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="pad">' +
+            IC.demoBanner().replace('class="demo-flag"', 'class="demo-flag" style="margin:0 0 12px"') +
+            (IC.config.retail.enabled
+              ? '<button class="row" data-act="shop" style="margin-bottom:14px;' +
+                'background:linear-gradient(140deg,#12303E,#0E1E2A);' +
+                'border:1px solid rgba(56,225,255,.22)">' +
+                  '<span class="row__icon" style="color:var(--ic-ice)">' + IC.icon('box') + '</span>' +
+                  '<span class="row__main">' +
+                    '<span class="row__title" style="font-size:14px">' +
+                      IC.i18n.t('shopEntryTitle') + '</span>' +
+                    '<span class="row__sub">' + IC.i18n.t('shopEntrySub') + '</span>' +
+                  '</span>' +
+                  '<span class="tag tag--pilot">' +
+                    IC.util.money(IC.config.retail.listPrice) + '</span>' +
+                  '<span class="row__chev">' + IC.icon('chev') + '</span>' +
+                '</button>'
+              : '') +
+            '<div class="spread"><h2 class="h2" style="margin:0">' + IC.i18n.t('nearbyStations') + '</h2>' +
+              '<span class="tiny" id="ic-count"></span></div>' +
+            '<div class="list" id="ic-stations" style="margin-top:10px"></div>' +
+          '</div>' +
+        '</div>';
+    },
+
+    mount: function (root) {
+      mapEl = root.querySelector('#ic-map');
+      var list = root.querySelector('#ic-stations');
+
+      // A rental already running? Send the user straight to it.
+      if (IC.store.get().rental) { IC.router.go('rental'); return; }
+
+      IC.api.listStations().then(function (rows) {
+        stations = rows.slice().sort(function (a, b) {
+          return IC.util.distanceKm(IC.fixtures.me, a) - IC.util.distanceKm(IC.fixtures.me, b);
+        });
+        IC.store.set({ stations: stations });
+        list.innerHTML = stations.map(stationRow).join('');
+        root.querySelector('#ic-count').textContent = stations.length + ' ' + (IC.i18n.isEn() ? 'stations' : '個站點');
+        drawMap();
+      });
+
+      IC.util.on(root, '[data-act="station"]', function (e, el) {
+        var s = stations.filter(function (x) { return x.id === el.getAttribute('data-id'); })[0];
+        if (s) openStation(s);
+      });
+      IC.util.on(root, '[data-act="locate"]', function () {
+        activeId = null; drawMap(); IC.toast(IC.i18n.isEn() ? 'Centred on you' : '已定位');
+      });
+      IC.util.on(root, '[data-act="layers"]', function () {
+        IC.toast(IC.i18n.isEn() ? 'Filters: coming in v2' : '篩選功能：第二版推出');
+      });
+      IC.util.on(root, '[data-act="shop"]', function () { IC.router.go('shop'); });
+      IC.util.on(root, '[data-act="search"]', function () {
+        IC.toast(IC.i18n.isEn() ? 'Search: coming in v2' : '搜尋功能：第二版推出');
+      });
+
+      ro = new ResizeObserver(function () { drawMap(); });
+      ro.observe(mapEl);
+    },
+
+    unmount: function () {
+      if (ro) { ro.disconnect(); ro = null; }
+      IC.sheet.close();
+    }
+  };
+})();
+
+/* ==== src/views/scan.js ==== */
+/* scan.js — QR scanner.
+   The camera path is intentionally a stub: a production build wires
+   navigator.mediaDevices.getUserMedia + BarcodeDetector (or jsQR as fallback)
+   here and calls onCode(). Manual cabinet-code entry is the always-available
+   fallback, which is what venue staff use when a lens is dirty or wet. */
+window.IC = window.IC || {};
+
+IC.routes.scan = {
+  tab: 'scan',
+
+  render: function () {
+    return '' +
+      IC.topbar(IC.i18n.t('scanTitle'), { back: false }) +
+      '<div class="scanner">' +
+        '<div class="scanner__frame">' +
+          '<span class="scanner__corner tl"></span><span class="scanner__corner tr"></span>' +
+          '<span class="scanner__corner bl"></span><span class="scanner__corner br"></span>' +
+        '</div>' +
+        '<p class="muted center">' + IC.i18n.t('scanHint') + '</p>' +
+        '<div class="stack" style="width:100%;max-width:320px">' +
+          '<button class="btn" data-act="sim">' + IC.icon('check') + ' ' + IC.i18n.t('simulateScan') + '</button>' +
+          '<button class="btn btn--ghost" data-act="manual">' + IC.i18n.t('scanManual') + '</button>' +
+        '</div>' +
+      '</div>';
+  },
+
+  mount: function (root) {
+    /* Demo shortcut: pick the nearest station with a fan in it. */
+    IC.util.on(root, '[data-act="sim"]', function () {
+      IC.api.listStations().then(function (rows) {
+        var s = rows.filter(function (x) { return !x.offline && x.availableFans > 0; })
+          .sort(function (a, b) {
+            return IC.util.distanceKm(IC.fixtures.me, a) - IC.util.distanceKm(IC.fixtures.me, b);
+          })[0];
+        if (!s) return IC.toast(IC.i18n.isEn() ? 'No fans nearby' : '附近暫無可借風扇');
+        IC.router.go('rent?station=' + s.id);
+      });
+    });
+
+    IC.util.on(root, '[data-act="manual"]', function () {
+      IC.sheet.open(
+        '<h2 class="h2" style="margin-top:0">' + IC.i18n.t('scanManual') + '</h2>' +
+        '<input class="field" id="ic-code" inputmode="numeric" autocomplete="off" ' +
+          'placeholder="' + IC.i18n.t('cabinetCode') + ' · 884201">' +
+        '<button class="btn" style="margin-top:12px" data-act="go">' + IC.i18n.t('confirm') + '</button>' +
+        '<p class="tiny" style="margin-top:10px">' +
+          (IC.i18n.isEn() ? 'The 6-digit code is printed under the QR label on the cabinet.'
+                          : '六位數字編號印於機櫃二維碼標籤下方。') + '</p>',
+        function (sheet) {
+          var input = sheet.querySelector('#ic-code');
+          input.focus();
+          var submit = function () {
+            IC.api.findByCode(input.value).then(function (s) {
+              if (!s) return IC.toast(IC.i18n.isEn() ? 'Cabinet not found' : '找不到此機櫃');
+              IC.sheet.close();
+              IC.router.go('rent?station=' + s.id);
+            });
+          };
+          IC.util.on(sheet, '[data-act="go"]', submit);
+          input.addEventListener('keydown', function (e) { if (e.key === 'Enter') submit(); });
+        }
+      );
+    });
+  },
+
+  unmount: function () { IC.sheet.close(); }
+};
+
+/* ==== src/views/rent.js ==== */
+/* rent.js — pre-rental confirmation: price, deposit, consent, unlock. */
+window.IC = window.IC || {};
+
+IC.routes.rent = (function () {
+  var station = null, busy = false;
+
+  function name(s) { return IC.i18n.isEn() ? s.name_en : s.name_zh; }
+
+  return {
+    tab: 'scan',
+    guard: 'auth',
+
+    render: function () {
+      return IC.topbar(IC.i18n.t('rentConfirm')) +
+        '<div class="screen__body pad" id="ic-rent">' +
+          '<div class="empty">' + IC.icon('fan') + '</div>' +
+        '</div>';
+    },
+
+    mount: function (root, params) {
+      var body = root.querySelector('#ic-rent');
+      busy = false;
+
+      IC.api.getStation(params.station || params.id).then(function (s) {
+        station = s;
+        if (!s) { body.innerHTML = '<div class="empty">' + IC.icon('warn') + '<div>Station not found</div></div>'; return; }
+
+        var p = IC.config.pricing;
+        var promo = IC.api.isPromo(s);
+        var rate = promo ? p.promoRatePerHour : p.ratePerHour;
+
+        body.innerHTML = '' +
+          '<div class="fanwrap"><div class="fan fan--slow">' + IC.icon('fan') + '</div></div>' +
+          '<h1 class="h1 center" style="font-size:20px">' + IC.util.esc(name(s)) + '</h1>' +
+          '<p class="muted center" style="margin-top:0">' +
+            IC.util.esc(IC.i18n.isEn() ? s.addr_en : s.addr_zh) + '</p>' +
+
+          '<div class="card" style="margin-top:16px">' +
+            '<div class="kv"><span>' + IC.i18n.t('ratePerHour') + '</span><b>' + IC.util.money(rate) +
+              (promo ? '  <span class="tag tag--pilot">' + IC.i18n.t('promoRate') + '</span>' : '') + '</b></div>' +
+            '<div class="kv"><span>' + IC.i18n.t('deposit') + '</span><b>' + IC.util.money(p.preAuthDeposit) + '</b></div>' +
+            '<div class="kv"><span>' + IC.i18n.t('available') + '</span><b>' + s.availableFans + ' / ' + s.slots + '</b></div>' +
+          '</div>' +
+
+          '<p class="tiny" style="margin-top:12px">' + IC.i18n.t('billingNote') + '</p>' +
+          '<p class="tiny">' + IC.i18n.t('depositNote') + '</p>' +
+
+          '<label class="row" style="margin-top:14px;align-items:flex-start;cursor:pointer">' +
+            '<input type="checkbox" id="ic-agree" style="width:20px;height:20px;accent-color:#38E1FF;margin-top:1px">' +
+            '<span class="row__main"><span class="row__sub" style="font-size:13px;color:var(--tx-2)">' +
+              IC.i18n.t('agreeTerms') + '</span></span>' +
+          '</label>' +
+
+          '<button class="btn" id="ic-unlock" style="margin-top:16px" disabled>' +
+            IC.icon('shield') + ' ' + IC.i18n.t('unlockNow') + '</button>';
+
+        var agree = body.querySelector('#ic-agree');
+        var btn = body.querySelector('#ic-unlock');
+        agree.addEventListener('change', function () { btn.disabled = !agree.checked || busy; });
+
+        btn.addEventListener('click', function () {
+          if (busy) return;
+          busy = true;
+          btn.disabled = true;
+          btn.innerHTML = IC.i18n.t('unlocking');
+
+          IC.api.startRental(s.id).then(function (rental) {
+            IC.store.set({ rental: rental });
+            IC.toast(IC.i18n.t('slotOpened', { n: rental.slot }));
+            IC.router.go('rental');
+          }).catch(function (err) {
+            busy = false;
+            btn.disabled = false;
+            btn.innerHTML = IC.icon('shield') + ' ' + IC.i18n.t('unlockNow');
+            IC.toast(err.message === 'no_fans_available'
+              ? (IC.i18n.isEn() ? 'No fans left in this cabinet' : '此機櫃暫無可借風扇')
+              : (IC.i18n.isEn() ? 'Could not unlock — try again' : '解鎖失敗，請重試'));
+          });
+        });
+      });
+    }
+  };
+})();
+
+/* ==== src/views/rental.js ==== */
+/* rental.js — the live rental: running clock, running charge, fan speed,
+   and the route to a return point. This is the screen users sit on longest. */
+window.IC = window.IC || {};
+
+IC.routes.rental = (function () {
+  var tick = null;
+
+  function paint(root) {
+    var r = IC.store.get().rental;
+    if (!r) return;
+    var q = IC.pricing.running(r.startedAt, r.promo);
+    var elapsed = (Date.now() - r.startedAt) / 1000;
+
+    var clock = root.querySelector('#ic-clock');
+    var charge = root.querySelector('#ic-charge');
+    var blocks = root.querySelector('#ic-blocks');
+    if (clock) clock.textContent = IC.util.clock(elapsed);
+    if (charge) charge.textContent = IC.util.money(q.gross);
+    if (blocks) {
+      blocks.textContent = q.blocks + ' × ' + IC.config.pricing.billingBlockMinutes +
+        (IC.i18n.isEn() ? ' min' : ' 分鐘') + ' @ ' + IC.util.money(q.perBlock);
+    }
+  }
+
+  return {
+    tab: 'scan',
+    guard: 'auth',
+
+    render: function () {
+      var r = IC.store.get().rental;
+      if (!r) return IC.topbar(IC.i18n.t('activeRental'), { back: false }) +
+        '<div class="screen__body"><div class="empty">' + IC.icon('fan') +
+        '<div>' + IC.i18n.t('historyEmpty') + '</div></div></div>';
+
+      var st = (IC.store.get().stations || []).filter(function (s) { return s.id === r.stationId; })[0];
+      // On a cold load (or a mid-rental refresh) the station cache is empty;
+      // show the id, then mount() fills in the real name once the API answers.
+      var stName = st ? (IC.i18n.isEn() ? st.name_en : st.name_zh) : r.stationId;
+      var speeds = ['low', 'mid', 'high'];
+      var rate = r.promo ? IC.config.pricing.promoRatePerHour : IC.config.pricing.ratePerHour;
+
+      return IC.topbar(IC.i18n.t('activeRental'), { back: false,
+        right: '<div class="topbar__side" style="width:auto"><span class="tag tag--active">' +
+               IC.util.money(rate) + '/h</span></div>' }) +
+        '<div class="screen__body pad">' +
+          '<div class="fanwrap"><div class="fan" id="ic-fan">' + IC.icon('fan') + '</div></div>' +
+          '<p class="muted center" style="margin:0">' + IC.i18n.t('elapsed') + '</p>' +
+          '<div class="timer" id="ic-clock">00:00</div>' +
+
+          '<div class="card">' +
+            '<div class="kv"><span>' + IC.i18n.t('currentCharge') + '</span>' +
+              '<b id="ic-charge">' + IC.util.money(0) + '</b></div>' +
+            '<div class="kv"><span>' + IC.i18n.t('billingNote') + '</span>' +
+              '<b id="ic-blocks" style="font-weight:600;font-size:12px;color:var(--tx-2)"></b></div>' +
+            '<div class="kv"><span>' + IC.i18n.t('deposit') + '</span>' +
+              '<b>' + IC.util.money(IC.config.pricing.preAuthDeposit) + '</b></div>' +
+          '</div>' +
+
+          '<div class="card">' +
+            '<div class="kv"><span>' + IC.i18n.t('rentedFrom') + '</span><b style="font-size:13px" ' +
+              'id="ic-station-name">' + IC.util.esc(stName) + '</b></div>' +
+            '<div class="kv"><span>' + IC.i18n.t('batteryLeft') + '</span><b>' + r.battery + '%</b></div>' +
+            '<div class="kv"><span>ID</span><b style="font-size:12px">' + IC.util.esc(r.fanId) + '</b></div>' +
+          '</div>' +
+
+          '<h2 class="h2">' + IC.i18n.t('fanSpeed') + '</h2>' +
+          '<div class="speeds">' + speeds.map(function (k, i) {
+            return '<button data-act="speed" data-v="' + (i + 1) + '"' +
+              (r.speed === i + 1 ? ' class="is-active"' : '') + '>' + IC.i18n.t(k) + '</button>';
+          }).join('') + '</div>' +
+
+          '<div class="stack" style="margin-top:20px">' +
+            '<button class="btn" data-act="return">' + IC.icon('box') + ' ' + IC.i18n.t('endRental') + '</button>' +
+            '<button class="btn btn--ghost" data-act="find">' + IC.icon('pin') + ' ' + IC.i18n.t('findReturn') + '</button>' +
+          '</div>' +
+        '</div>';
+    },
+
+    mount: function (root) {
+      var r = IC.store.get().rental;
+      if (!r) return;
+
+      paint(root);
+      tick = setInterval(function () { paint(root); }, 1000);
+
+      // Resolve the pickup station name if it was not already cached.
+      var nameEl = root.querySelector('#ic-station-name');
+      if (nameEl && nameEl.textContent === r.stationId) {
+        IC.api.getStation(r.stationId).then(function (s) {
+          if (s && nameEl.isConnected) nameEl.textContent = IC.i18n.isEn() ? s.name_en : s.name_zh;
+        });
+      }
+
+      var fan = root.querySelector('#ic-fan');
+      var applySpeedClass = function (v) {
+        if (fan) fan.style.setProperty('--x', v);
+        if (fan) fan.querySelector('svg').style.animationDuration = (4.2 - v * 1.0) + 's';
+      };
+      applySpeedClass(r.speed);
+
+      IC.util.on(root, '[data-act="speed"]', function (e, el) {
+        var v = Number(el.getAttribute('data-v'));
+        IC.api.setSpeed(r.id, v).then(function () {
+          r.speed = v;
+          IC.store.set({ rental: r });
+          IC.util.els('[data-act="speed"]', root).forEach(function (b) {
+            b.classList.toggle('is-active', Number(b.getAttribute('data-v')) === v);
+          });
+          applySpeedClass(v);
+        });
+      });
+
+      IC.util.on(root, '[data-act="return"]', function () { IC.router.go('return'); });
+      IC.util.on(root, '[data-act="find"]', function () { IC.router.go('return'); });
+    },
+
+    unmount: function () { if (tick) { clearInterval(tick); tick = null; } }
+  };
+})();
+
+/* ==== src/views/return.js ==== */
+/* return.js — pick a return station, run the UV cycle, produce the receipt. */
+window.IC = window.IC || {};
+
+IC.routes['return'] = (function () {
+  function name(s) { return IC.i18n.isEn() ? s.name_en : s.name_zh; }
+
+  function finish(root, station) {
+    var r = IC.store.get().rental;
+    if (!r) return IC.router.go('home');
+
+    root.querySelector('#ic-return-body').innerHTML =
+      '<div class="fanwrap" style="padding-top:60px"><div class="fan">' + IC.icon('snow') + '</div></div>' +
+      '<h1 class="h1 center" style="font-size:19px">' + IC.i18n.t('disinfecting') + '</h1>' +
+      '<p class="muted center">' + IC.util.esc(name(station)) + '</p>';
+
+    IC.api.endRental(r, station.id).then(function (order) {
+      IC.store.set({ rental: null, lastOrder: order });
+      IC.router.go('receipt/' + order.id);
+    }).catch(function () {
+      IC.toast(IC.i18n.isEn() ? 'Return failed — try another slot' : '歸還失敗，請改用其他格口');
+      IC.router.go('rental');
+    });
+  }
+
+  return {
+    tab: 'scan',
+    guard: 'auth',
+
+    render: function () {
+      return IC.topbar(IC.i18n.t('returnTitle')) +
+        '<div class="screen__body pad" id="ic-return-body">' +
+          '<p class="muted">' + IC.i18n.t('returnHint') + '</p>' +
+          '<div class="list" id="ic-return-list" style="margin-top:12px"></div>' +
+        '</div>';
+    },
+
+    mount: function (root) {
+      if (!IC.store.get().rental) { IC.router.go('home'); return; }
+      var list = root.querySelector('#ic-return-list');
+
+      IC.api.listStations().then(function (rows) {
+        // Only cabinets that are online and have an empty slot can take a fan.
+        var open = rows.filter(function (s) { return !s.offline && s.freeSlots > 0; })
+          .sort(function (a, b) {
+            return IC.util.distanceKm(IC.fixtures.me, a) - IC.util.distanceKm(IC.fixtures.me, b);
+          });
+
+        if (!open.length) {
+          list.innerHTML = '<div class="empty">' + IC.icon('warn') +
+            '<div>' + (IC.i18n.isEn() ? 'No free slots nearby' : '附近暫無空置格口') + '</div></div>';
+          return;
+        }
+
+        list.innerHTML = open.map(function (s) {
+          return '<button class="station" data-act="pick" data-id="' + IC.util.esc(s.id) + '">' +
+            '<span class="station__badge">' + IC.icon('box') + '</span>' +
+            '<span class="row__main">' +
+              '<span class="row__title">' + IC.util.esc(name(s)) + '</span>' +
+              '<span class="row__sub">' + IC.util.distanceLabel(IC.util.distanceKm(IC.fixtures.me, s)) +
+                ' · ' + IC.util.esc(IC.i18n.isEn() ? s.addr_en : s.addr_zh) + '</span>' +
+              '<span class="station__meta"><span class="stat stat--in">' +
+                IC.i18n.t('returnable') + ' <b>' + s.freeSlots + '</b></span></span>' +
+            '</span></button>';
+        }).join('');
+
+        IC.util.on(root, '[data-act="pick"]', function (e, el) {
+          var s = open.filter(function (x) { return x.id === el.getAttribute('data-id'); })[0];
+          if (s) finish(root, s);
+        });
+      });
+    }
+  };
+})();
+
+/* ==== src/views/receipt.js ==== */
+/* receipt.js — post-return summary. Also reachable from rental history. */
+window.IC = window.IC || {};
+
+IC.routes.receipt = (function () {
+  function stationName(id, stations) {
+    var s = (stations || []).filter(function (x) { return x.id === id; })[0];
+    return s ? (IC.i18n.isEn() ? s.name_en : s.name_zh) : id;
+  }
+
+  return {
+    tab: 'profile',
+
+    render: function () {
+      return IC.topbar(IC.i18n.t('receipt')) +
+        '<div class="screen__body pad" id="ic-receipt"></div>';
+    },
+
+    mount: function (root, params) {
+      var body = root.querySelector('#ic-receipt');
+
+      Promise.all([IC.api.listOrders(), IC.api.listStations()]).then(function (res) {
+        var orders = res[0], stations = res[1];
+        var o = orders.filter(function (x) { return x.id === params.id; })[0] ||
+                IC.store.get().lastOrder;
+
+        if (!o) {
+          body.innerHTML = '<div class="empty">' + IC.icon('warn') + '<div>Order not found</div></div>';
+          return;
+        }
+        // A purchase id landing here (a stale link, a typed URL) belongs on the
+        // purchase receipt — the rental maths below would produce NaN.
+        if (o.type === 'purchase') { IC.router.go('purchase/' + o.id); return; }
+
+        var amount = o.amount != null ? o.amount : IC.pricing.quote(o.minutes, o.promo).gross;
+        var q = IC.pricing.quote(o.minutes, o.promo);
+
+        body.innerHTML = '' +
+          '<div class="fanwrap"><div class="fan fan--slow">' + IC.icon('check') + '</div></div>' +
+          '<h1 class="h1 center" style="font-size:22px">' + IC.i18n.t('returned') + '</h1>' +
+          '<p class="muted center" style="margin-top:0">' + IC.util.esc(o.id) + '</p>' +
+
+          '<div class="card" style="margin-top:14px">' +
+            '<div class="kv"><span>' + IC.i18n.t('rentedFrom') + '</span><b style="font-size:13px">' +
+              IC.util.esc(stationName(o.stationId, stations)) + '</b></div>' +
+            '<div class="kv"><span>' + IC.i18n.t('returnTitle') + '</span><b style="font-size:13px">' +
+              IC.util.esc(stationName(o.returnStationId, stations)) + '</b></div>' +
+            '<div class="kv"><span>' + IC.i18n.t('duration') + '</span><b>' +
+              IC.util.durationLabel(o.minutes, IC.i18n.locale) + '</b></div>' +
+            '<div class="kv"><span>' + IC.i18n.t('ratePerHour') + '</span><b>' + IC.util.money(q.rate) +
+              (o.promo ? ' <span class="tag tag--pilot">' + IC.i18n.t('promoRate') + '</span>' : '') + '</b></div>' +
+            '<div class="kv"><span>' + q.blocks + ' × ' + IC.config.pricing.billingBlockMinutes +
+              (IC.i18n.isEn() ? ' min' : ' 分鐘') + '</span><b>' + IC.util.money(q.perBlock) + '</b></div>' +
+            '<div class="kv kv--total"><span>' + IC.i18n.t('totalCharge') + '</span><b>' +
+              IC.util.money(amount) + '</b></div>' +
+          '</div>' +
+
+          '<div class="card card--flat" style="margin-top:10px">' +
+            '<div class="spread"><span class="muted">' + IC.i18n.t('depositReleased') + '</span>' +
+              '<span class="tag tag--live">' + IC.icon('check') + ' ' +
+              IC.util.money(IC.config.pricing.preAuthDeposit) + '</span></div>' +
+          '</div>' +
+
+          '<button class="btn" style="margin-top:18px" data-act="home">' + IC.i18n.t('backHome') + '</button>';
+
+        IC.util.on(root, '[data-act="home"]', function () { IC.router.go('home'); });
+      });
+    }
+  };
+})();
+
+/* ==== src/views/profile.js ==== */
+/* profile.js — account hub. Same row set as Yellowpal, plus Partner. */
+window.IC = window.IC || {};
+
+IC.routes.profile = {
+  tab: 'profile',
+
+  render: function () {
+    var st = IC.store.get();
+    var u = st.signedIn ? IC.fixtures.user : null;
+    var t = IC.i18n.t;
+
+    var header = u
+      ? '<div class="card" style="background:linear-gradient(140deg,#12303E,#0E1E2A);border-color:rgba(56,225,255,.2)">' +
+          '<div class="spread">' +
+            '<div>' +
+              '<div style="font-size:18px;font-weight:800">' +
+                IC.util.esc(IC.i18n.isEn() ? u.name_en : u.name_zh) + '</div>' +
+              '<div class="muted" style="font-size:12px;margin-top:2px">' + IC.util.esc(u.mobile) + '</div>' +
+            '</div>' +
+            '<span class="tag tag--pilot">' + t('member') + '</span>' +
+          '</div>' +
+        '</div>'
+      : '<button class="card" style="width:100%;text-align:left" data-act="login">' +
+          '<div class="spread"><div><div style="font-size:17px;font-weight:700">' + t('signIn') + '</div>' +
+          '<div class="muted" style="font-size:12px">' + IC.config.brand.slogan_zh + '</div></div>' +
+          '<span class="row__chev">' + IC.icon('chev') + '</span></div></button>';
+
+    var rows = [
+      { act: 'wallet',  icon: 'wallet', title: t('wallet') },
+      { act: 'history', icon: 'clock',  title: t('rentalHistory') },
+      { act: 'promo',   icon: 'gift',   title: t('promo') },
+      { act: 'refer',   icon: 'users',  title: t('referFriend') },
+      { act: 'shop',    icon: 'box',    title: t('shop'), sub: t('shopEntrySub') },
+      { act: 'partner', icon: 'chart',  title: t('partner'), sub: t('revenueShare') },
+      { act: 'support', icon: 'help',   title: t('support') }
+    ];
+
+    var tail = st.signedIn
+      ? IC.row({ act: 'logout', icon: 'logout', title: t('logout') }) +
+        IC.row({ act: 'delete', icon: 'trash',  title: t('deleteAccount'), danger: true })
+      : '';
+
+    return IC.topbar(t('profile'), { back: false, right: IC.langBtn() }) +
+      '<div class="screen__body pad">' +
+        header +
+        '<div class="list" style="margin-top:12px">' + rows.map(IC.row).join('') + '</div>' +
+        '<div class="list" style="margin-top:12px">' + tail + '</div>' +
+        '<p class="tiny center" style="margin-top:22px">' +
+          IC.util.esc(IC.config.brand.entity) + ' · v0.1.0 · ' +
+          (IC.config.runtime.apiMode === 'mock' ? 'MOCK API' : 'LIVE API') + '</p>' +
+      '</div>';
+  },
+
+  mount: function (root) {
+    var go = { wallet: 'wallet', history: 'history', promo: 'promo', refer: 'refer',
+               shop: 'shop', support: 'support', partner: 'partner', login: 'login' };
+
+    Object.keys(go).forEach(function (act) {
+      IC.util.on(root, '[data-act="' + act + '"]', function () { IC.router.go(go[act]); });
+    });
+
+    IC.util.on(root, '[data-act="lang"]', function () { IC.i18n.toggle(); });
+
+    IC.util.on(root, '[data-act="logout"]', function () {
+      IC.store.reset();
+      IC.toast(IC.i18n.isEn() ? 'Signed out' : '已登出');
+      IC.router.refresh();
+    });
+
+    IC.util.on(root, '[data-act="delete"]', function () {
+      IC.sheet.open(
+        '<h2 class="h2" style="margin-top:0">' + IC.i18n.t('deleteAccount') + '</h2>' +
+        '<p class="muted">' + (IC.i18n.isEn()
+          ? 'This permanently removes your account and rental history. Any active pre-authorisation is released first. This cannot be undone.'
+          : '此操作將永久刪除您的帳戶及租借紀錄，並先行解除任何生效中的預授權。刪除後無法復原。') + '</p>' +
+        '<div class="stack" style="margin-top:14px">' +
+          '<button class="btn btn--danger" data-act="confirm-delete">' + IC.i18n.t('deleteAccount') + '</button>' +
+          '<button class="btn btn--ghost" data-act="sheet-close">' + IC.i18n.t('cancel') + '</button>' +
+        '</div>',
+        function (sheet) {
+          IC.util.on(sheet, '[data-act="confirm-delete"]', function () {
+            IC.sheet.close();
+            IC.store.reset();
+            IC.toast(IC.i18n.isEn() ? 'Account deleted' : '帳戶已刪除');
+            IC.router.go('home');
+          });
+        }
+      );
+    });
+  },
+
+  unmount: function () { IC.sheet.close(); }
+};
+
+/* ==== src/views/wallet.js ==== */
+/* wallet.js — payment method, live pre-auth hold, transaction list.
+   No card data ever lives in this app: KPay's hosted form owns that. */
+window.IC = window.IC || {};
+
+IC.routes.wallet = {
+  tab: 'profile',
+  guard: 'auth',
+
+  render: function () {
+    var u = IC.fixtures.user, t = IC.i18n.t;
+    var r = IC.store.get().rental;
+
+    return IC.topbar(t('wallet')) +
+      '<div class="screen__body pad">' +
+        '<h2 class="h2">' + t('paymentMethod') + '</h2>' +
+        '<div class="card">' +
+          '<div class="spread">' +
+            '<div><div style="font-weight:700">' + IC.util.esc(u.paymentMethod.brand) +
+              ' •••• ' + IC.util.esc(u.paymentMethod.last4) + '</div>' +
+              '<div class="muted" style="font-size:12px">via ' + IC.util.esc(u.paymentMethod.provider) + '</div></div>' +
+            '<span class="tag tag--live">' + IC.icon('check') + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<button class="btn btn--ghost btn--sm" style="margin-top:10px" data-act="addcard">' +
+          t('addCard') + '</button>' +
+
+        '<h2 class="h2">' + t('activeHold') + '</h2>' +
+        (r
+          ? '<div class="card"><div class="kv"><span>' + t('deposit') + '</span><b>' +
+              IC.util.money(IC.config.pricing.preAuthDeposit) + '</b></div>' +
+            '<div class="kv"><span>' + t('activeRental') + '</span><b style="font-size:12px">' +
+              IC.util.esc(r.id) + '</b></div></div>'
+          : '<div class="card card--flat"><span class="muted">' + t('noHold') + '</span></div>') +
+
+        '<h2 class="h2">' + t('invoices') + '</h2>' +
+        '<div class="list" id="ic-txns"></div>' +
+
+        '<p class="tiny" style="margin-top:16px">' + t('walletNote') + '</p>' +
+      '</div>';
+  },
+
+  mount: function (root) {
+    IC.api.listOrders().then(function (orders) {
+      var list = root.querySelector('#ic-txns');
+      list.innerHTML = orders.map(function (o) {
+        var buy = o.type === 'purchase';
+        var amt = o.amount != null ? o.amount : IC.pricing.quote(o.minutes, o.promo).gross;
+        var tagCls = o.status === 'refunded' ? 'tag--warn' : 'tag--done';
+        return '<div class="row" style="cursor:default">' +
+          '<span class="row__icon">' + IC.icon(buy ? 'box' : 'wallet') + '</span>' +
+          '<span class="row__main"><span class="row__title" style="font-size:14px">' +
+            IC.util.money(amt) + '</span>' +
+            '<span class="row__sub">' + IC.i18n.t(buy ? 'typePurchase' : 'typeRental') + ' · ' +
+            IC.util.stamp(o.startedAt) + ' · ' + IC.util.esc(o.id) + '</span></span>' +
+          '<span class="tag ' + tagCls + '">' + IC.i18n.t(o.status === 'refunded' ? 'refunded' : 'completed') + '</span>' +
+          '</div>';
+      }).join('');
+    });
+
+    IC.util.on(root, '[data-act="addcard"]', function () {
+      // Production: redirect to the KPay hosted card form, then return here.
+      IC.toast(IC.i18n.isEn() ? 'Opens the KPay hosted card form' : '將前往 KPay 安全付款頁面');
+    });
+    IC.util.on(root, '[data-act="back"]', function () { IC.router.back(); });
+  }
+};
+
+/* ==== src/views/history.js ==== */
+/* history.js — rental history list, mirroring Yellowpal's order list. */
+window.IC = window.IC || {};
+
+IC.routes.history = {
+  tab: 'profile',
+  guard: 'auth',
+
+  render: function () {
+    return IC.topbar(IC.i18n.t('rentalHistory')) +
+      '<div class="screen__body pad"><div class="list" id="ic-history"></div></div>';
+  },
+
+  mount: function (root) {
+    Promise.all([IC.api.listOrders(), IC.api.listStations()]).then(function (res) {
+      var orders = res[0], stations = res[1];
+      var list = root.querySelector('#ic-history');
+
+      var active = IC.store.get().rental;
+      var rows = [];
+
+      if (active) {
+        rows.push('<button class="row" data-act="active">' +
+          '<span class="row__icon">' + IC.icon('fan') + '</span>' +
+          '<span class="row__main"><span class="row__title">' + IC.util.esc(active.id) + '</span>' +
+          '<span class="row__sub">' + IC.util.stamp(active.startedAt) + '</span></span>' +
+          '<span class="tag tag--active">' + IC.i18n.t('inProgress') + '</span></button>');
+      }
+
+      if (!orders.length && !active) {
+        list.innerHTML = '<div class="empty">' + IC.icon('clock') +
+          '<div>' + IC.i18n.t('historyEmpty') + '</div></div>';
+        return;
+      }
+
+      rows = rows.concat(orders.map(function (o) {
+        var cls = o.status === 'refunded' ? 'tag--warn' : 'tag--done';
+
+        // Purchases and rentals share one list; only the middle line differs.
+        if (o.type === 'purchase') {
+          return '<button class="row" data-act="open-buy" data-id="' + IC.util.esc(o.id) + '">' +
+            '<span class="row__icon">' + IC.icon('box') + '</span>' +
+            '<span class="row__main"><span class="row__title" style="font-size:14px">' +
+              IC.i18n.t('typePurchase') + ' · ' + IC.util.esc(o.sku) + '</span>' +
+            '<span class="row__sub">' + IC.util.stamp(o.startedAt) + ' · × ' + o.qty +
+              ' · ' + IC.util.money(o.amount) + '</span></span>' +
+            '<span class="tag tag--done">' + IC.i18n.t('completed') + '</span></button>';
+        }
+
+        var s = stations.filter(function (x) { return x.id === o.stationId; })[0];
+        var nm = s ? (IC.i18n.isEn() ? s.name_en : s.name_zh) : o.stationId;
+        var amt = o.amount != null ? o.amount : IC.pricing.quote(o.minutes, o.promo).gross;
+        return '<button class="row" data-act="open" data-id="' + IC.util.esc(o.id) + '">' +
+          '<span class="row__icon">' + IC.icon('fan') + '</span>' +
+          '<span class="row__main"><span class="row__title" style="font-size:14px">' + IC.util.esc(nm) + '</span>' +
+          '<span class="row__sub">' + IC.util.stamp(o.startedAt) + ' · ' +
+            IC.util.durationLabel(o.minutes, IC.i18n.locale) + ' · ' + IC.util.money(amt) + '</span></span>' +
+          '<span class="tag ' + cls + '">' +
+            IC.i18n.t(o.status === 'refunded' ? 'refunded' : 'completed') + '</span></button>';
+      }));
+
+      list.innerHTML = rows.join('');
+
+      IC.util.on(root, '[data-act="open"]', function (e, el) {
+        IC.router.go('receipt/' + el.getAttribute('data-id'));
+      });
+      IC.util.on(root, '[data-act="open-buy"]', function (e, el) {
+        IC.router.go('purchase/' + el.getAttribute('data-id'));
+      });
+      IC.util.on(root, '[data-act="active"]', function () { IC.router.go('rental'); });
+    });
+
+    IC.util.on(root, '[data-act="back"]', function () { IC.router.back(); });
+  }
+};
+
+/* ==== src/views/promo.js ==== */
+/* promo.js — promo code entry. */
+window.IC = window.IC || {};
+
+IC.routes.promo = {
+  tab: 'profile',
+  guard: 'auth',
+
+  render: function () {
+    var t = IC.i18n.t;
+    var bal = IC.store.get().promoMinutes;
+    return IC.topbar(t('promoTitle')) +
+      '<div class="screen__body pad">' +
+        (bal ? '<div class="card" style="border-color:rgba(56,225,255,.28)">' +
+                 '<div class="spread"><span class="muted">' +
+                 (IC.i18n.isEn() ? 'Free minutes' : '免費分鐘') + '</span>' +
+                 '<b style="font-size:20px;color:var(--ic-ice)">' + bal + '</b></div></div>' : '') +
+        '<button class="card" style="width:100%;text-align:center;border-style:dashed;margin-top:' +
+          (bal ? '10px' : '0') + '" data-act="add">' +
+          '<span class="muted" style="font-weight:600">' + t('addPromo') + '</span></button>' +
+        '<p class="tiny" style="margin-top:14px">' + t('promoTerms') + '</p>' +
+      '</div>';
+  },
+
+  mount: function (root) {
+    IC.util.on(root, '[data-act="back"]', function () { IC.router.back(); });
+
+    IC.util.on(root, '[data-act="add"]', function () {
+      IC.sheet.open(
+        '<h2 class="h2" style="margin-top:0">' + IC.i18n.t('addPromo') + '</h2>' +
+        '<input class="field" id="ic-promo" autocapitalize="characters" autocomplete="off" ' +
+          'placeholder="' + IC.i18n.t('promoPlaceholder') + '">' +
+        '<button class="btn" style="margin-top:12px" data-act="apply">' + IC.i18n.t('addPromo') + '</button>' +
+        '<p class="tiny" style="margin-top:10px">' +
+          (IC.i18n.isEn() ? 'Demo: any code starting with COOL or IC works, e.g. COOL30.'
+                          : '示範：以 COOL 或 IC 開頭的代碼即可使用，例如 COOL30。') + '</p>',
+        function (sheet) {
+          var input = sheet.querySelector('#ic-promo');
+          input.focus();
+          var apply = function () {
+            IC.api.applyPromo(input.value).then(function (res) {
+              IC.sheet.close();
+              IC.store.set({ promoMinutes: IC.store.get().promoMinutes + res.minutes });
+              IC.toast(IC.i18n.t('promoApplied') + ' +' + res.minutes +
+                       (IC.i18n.isEn() ? ' min' : ' 分鐘'));
+              IC.router.refresh();
+            }).catch(function () { IC.toast(IC.i18n.t('promoInvalid')); });
+          };
+          IC.util.on(sheet, '[data-act="apply"]', apply);
+          input.addEventListener('keydown', function (e) { if (e.key === 'Enter') apply(); });
+        }
+      );
+    });
+  },
+
+  unmount: function () { IC.sheet.close(); }
+};
+
+/* ==== src/views/refer.js ==== */
+/* refer.js — referral code + shareable QR.
+   The QR is drawn locally on a canvas so the page makes no network request and
+   works offline. It encodes a deep link carrying the referral code. */
+window.IC = window.IC || {};
+
+IC.routes.refer = {
+  tab: 'profile',
+  guard: 'auth',
+
+  render: function () {
+    var t = IC.i18n.t, code = IC.fixtures.user.referralCode;
+    return IC.topbar(t('referFriend')) +
+      '<div class="screen__body pad center">' +
+        '<h1 class="h1" style="font-size:20px;margin-top:10px">' +
+          (IC.i18n.isEn() ? 'Share Instantcool' : '分享 Instantcool') + '</h1>' +
+        '<p class="muted" style="max-width:300px;margin:0 auto 18px">' + t('referNote') + '</p>' +
+        '<div style="background:#fff;border-radius:20px;padding:16px;display:inline-block">' +
+          '<canvas id="ic-qr" width="220" height="220" style="display:block"></canvas>' +
+        '</div>' +
+        '<p class="muted" style="margin:18px 0 4px;font-size:12px">' + t('myCoupon') + '</p>' +
+        '<div style="font-size:22px;font-weight:800;letter-spacing:.06em;color:var(--ic-ice)">' +
+          IC.util.esc(code) + '</div>' +
+        '<button class="btn btn--ghost" style="margin-top:18px" data-act="copy">' +
+          IC.icon('copy') + ' ' + t('copyCode') + '</button>' +
+      '</div>';
+  },
+
+  mount: function (root) {
+    IC.util.on(root, '[data-act="back"]', function () { IC.router.back(); });
+
+    var code = IC.fixtures.user.referralCode;
+    IC.qr.draw(root.querySelector('#ic-qr'),
+               location.origin + location.pathname + '#/home?ref=' + encodeURIComponent(code));
+
+    IC.util.on(root, '[data-act="copy"]', function () {
+      var done = function () { IC.toast(IC.i18n.t('copied')); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(done, done);
+      } else { done(); }
+    });
+  }
+};
+
+/* ==== src/views/support.js ==== */
+/* support.js — FAQs / Contact / About, tabbed like Yellowpal's Support. */
+window.IC = window.IC || {};
+
+IC.routes.support = (function () {
+  var tab = 'faq';
+
+  function faqHtml() {
+    return IC.fixtures.faq.map(function (g) {
+      return '<h2 class="h2">' + IC.i18n.t(g.group) + '</h2>' +
+        g.items.map(function (it, i) {
+          var q = IC.i18n.isEn() ? it.q_en : it.q_zh;
+          var a = IC.i18n.isEn() ? it.a_en : it.a_zh;
+          return '<div class="acc" data-acc>' +
+            '<button class="acc__head" data-act="acc"><span>' + IC.util.esc(q) +
+              '</span><span>+</span></button>' +
+            '<div class="acc__body" hidden>' + IC.util.esc(a) + '</div></div>';
+        }).join('');
+    }).join('');
+  }
+
+  function contactHtml() {
+    var c = IC.config.brand.contact;
+    return '<div class="list" style="margin-top:8px">' +
+      IC.row({ act: 'email', icon: 'help', title: c.email,
+               sub: IC.i18n.isEn() ? 'Email support' : '電郵客戶服務' }) +
+      IC.row({ act: 'phone', icon: 'users', title: c.phone,
+               sub: IC.i18n.isEn() ? 'Mon–Sun 09:00–21:00' : '星期一至日 09:00–21:00' }) +
+      '</div>' +
+      '<p class="tiny" style="margin-top:14px">' +
+        (IC.i18n.isEn()
+          ? 'Quote your order number (R…) when reporting a stuck rental or a faulty cabinet.'
+          : '如租借未能結束或機櫃故障，請提供訂單編號（R…）以便跟進。') + '</p>';
+  }
+
+  function aboutHtml() {
+    var b = IC.config.brand;
+    return '<div class="card" style="margin-top:8px">' +
+        '<div style="font-size:17px;font-weight:800">' + IC.util.esc(b.entity) + '</div>' +
+        '<p class="muted" style="margin:8px 0 0">' +
+          (IC.i18n.isEn()
+            ? 'Instantcool operates a shared neck-fan network for Hong Kong: IoT cabinets, automatic UV-C disinfection, and QR self-service pickup and return. Venues invest nothing — hardware, software, maintenance and support are ours.'
+            : 'Instantcool 營運香港共享掛頸風扇網絡：物聯網智能機櫃、自動紫外光消毒，以及二維碼自助借還。合作場地無需任何資本投入，硬件、軟件、維護及客服全數由本公司承擔。') +
+        '</p>' +
+      '</div>' +
+      '<div class="card">' +
+        '<div class="kv"><span>' + (IC.i18n.isEn() ? 'Rate' : '收費') + '</span><b>' +
+          IC.util.money(IC.config.pricing.ratePerHour) + ' / ' + (IC.i18n.isEn() ? 'hour' : '小時') + '</b></div>' +
+        '<div class="kv"><span>' + IC.i18n.t('deposit') + '</span><b>' +
+          IC.util.money(IC.config.pricing.preAuthDeposit) + '</b></div>' +
+        '<div class="kv"><span>' + (IC.i18n.isEn() ? 'Cabinet slots' : '機櫃格口') + '</span><b>' +
+          IC.config.hardware.cabinetSlots + '</b></div>' +
+        '<div class="kv"><span>' + (IC.i18n.isEn() ? 'Fan battery' : '風扇電池') + '</span><b>' +
+          IC.config.hardware.fanBatteryMah + ' mAh</b></div>' +
+      '</div>' +
+      '<p class="tiny center" style="margin-top:16px">' + IC.util.esc(b.slogan_zh) + ' · ' +
+        IC.util.esc(b.slogan_en) + '</p>';
+  }
+
+  function paint(root) {
+    var box = root.querySelector('#ic-support-body');
+    box.innerHTML = tab === 'faq' ? faqHtml() : tab === 'contact' ? contactHtml() : aboutHtml();
+    IC.util.els('.segmented button', root).forEach(function (b) {
+      b.classList.toggle('is-active', b.getAttribute('data-v') === tab);
+    });
+  }
+
+  return {
+    tab: 'profile',
+
+    render: function () {
+      var t = IC.i18n.t;
+      return IC.topbar(t('support')) +
+        '<div class="screen__body pad">' +
+          '<div class="segmented">' +
+            '<button data-act="seg" data-v="faq">' + t('faq') + '</button>' +
+            '<button data-act="seg" data-v="contact">' + t('contactUs') + '</button>' +
+            '<button data-act="seg" data-v="about">' + t('aboutUs') + '</button>' +
+          '</div>' +
+          '<div id="ic-support-body"></div>' +
+        '</div>';
+    },
+
+    mount: function (root) {
+      paint(root);
+      IC.util.on(root, '[data-act="back"]', function () { IC.router.back(); });
+      IC.util.on(root, '[data-act="seg"]', function (e, el) {
+        tab = el.getAttribute('data-v');
+        paint(root);
+      });
+      IC.util.on(root, '[data-act="acc"]', function (e, el) {
+        var body = el.nextElementSibling;
+        var open = !body.hidden;
+        body.hidden = open;
+        el.querySelector('span:last-child').textContent = open ? '+' : '–';
+      });
+      IC.util.on(root, '[data-act="email"]', function () {
+        location.href = 'mailto:' + IC.config.brand.contact.email;
+      });
+      IC.util.on(root, '[data-act="phone"]', function () {
+        location.href = 'tel:' + IC.config.brand.contact.phone;
+      });
+    }
+  };
+})();
+
+/* ==== src/views/login.js ==== */
+/* login.js — mobile + OTP. Demo accepts any 6 digits.
+   Production: POST /auth/otp then POST /auth/verify; the server sets an
+   httpOnly session cookie. Never keep a bearer token in localStorage. */
+window.IC = window.IC || {};
+
+IC.routes.login = {
+  tab: 'profile',
+
+  render: function () {
+    var t = IC.i18n.t;
+    return IC.topbar(t('login')) +
+      '<div class="screen__body pad">' +
+        '<div class="fanwrap"><div class="fan fan--slow">' + IC.icon('fan') + '</div></div>' +
+        '<h1 class="h1 center">' + IC.config.brand.name + '</h1>' +
+        '<p class="muted center" style="margin-top:0">' + IC.config.brand.slogan_zh + '</p>' +
+        '<div class="stack" style="margin-top:22px">' +
+          '<input class="field" id="ic-mobile" type="tel" inputmode="numeric" ' +
+            'placeholder="' + t('mobile') + ' · +852" value="+852 6149 3493">' +
+          '<div style="display:flex;gap:8px">' +
+            '<input class="field" id="ic-otp" inputmode="numeric" maxlength="6" ' +
+              'placeholder="' + t('otp') + '" style="flex:1">' +
+            '<button class="btn btn--ghost" style="width:auto;padding:0 16px" data-act="send">' +
+              t('sendOtp') + '</button>' +
+          '</div>' +
+          '<button class="btn" data-act="login">' + t('login') + '</button>' +
+        '</div>' +
+        '<p class="tiny center" style="margin-top:16px">' + t('loginNote') + '</p>' +
+      '</div>';
+  },
+
+  mount: function (root, params) {
+    IC.util.on(root, '[data-act="back"]', function () { IC.router.back(); });
+
+    IC.util.on(root, '[data-act="send"]', function () {
+      root.querySelector('#ic-otp').value = '135790';
+      IC.toast(IC.i18n.isEn() ? 'Demo code filled in: 135790' : '示範驗證碼已填入：135790');
+    });
+
+    IC.util.on(root, '[data-act="login"]', function () {
+      var otp = root.querySelector('#ic-otp').value.trim();
+      if (!/^\d{6}$/.test(otp)) {
+        return IC.toast(IC.i18n.isEn() ? 'Enter the 6-digit code' : '請輸入 6 位驗證碼');
+      }
+      IC.store.set({ signedIn: true, user: IC.fixtures.user });
+      IC.toast(IC.i18n.isEn() ? 'Signed in' : '已登入');
+      IC.router.go(params.next || 'profile');
+    });
+  }
+};
+
+/* ==== src/views/shop.js ==== */
+/* ==========================================================================
+   shop.js — 零售購買.
+
+   The second revenue line alongside rental: sell the fan outright. Renting and
+   buying are not rivals — someone who has already paid to rent the same unit
+   three times is the warmest buyer there is, which is what the 以租轉購 credit
+   is for (see config.retail.rentToOwn).
+
+   Prices come from IC.config.retail and are ASSUMPTIONS; the maths lives in
+   IC.pricing.retail() so the checkout and any future margin report agree.
+   ========================================================================== */
+window.IC = window.IC || {};
+
+IC.routes.shop = (function () {
+  var product = null, qty = 1, fulfilId = 'cabinet', pickupStationId = null;
+  var rentalSpend = 0, stations = [];
+
+  function name(p) { return IC.i18n.isEn() ? p.name_en : p.name_zh; }
+  function fulfil() {
+    return IC.config.retail.fulfilment.filter(function (f) { return f.id === fulfilId; })[0];
+  }
+  /** Member pricing is earned by having rented before, not by signing up. */
+  function isMember() { return IC.store.get().signedIn && rentalSpend > 0; }
+
+  function quote() {
+    return IC.pricing.retail(qty, isMember(), rentalSpend, fulfil());
+  }
+
+  function stationName(s) { return IC.i18n.isEn() ? s.name_en : s.name_zh; }
+
+  function paintSummary(root) {
+    var q = quote();
+    var t = IC.i18n.t;
+    var r = IC.config.retail;
+    var box = root.querySelector('#ic-shop-summary');
+    if (!box) return;
+
+    box.innerHTML =
+      '<div class="kv"><span>' + t('subtotal') + ' · ' + q.qty + ' ×</span><b>' +
+        IC.util.money(q.subtotal) + '</b></div>' +
+      (q.credit > 0
+        ? '<div class="kv"><span>' + t('rentToOwn') + '</span><b style="color:var(--ic-mint)">−' +
+            IC.util.money(q.credit) + '</b></div>'
+        : '') +
+      '<div class="kv"><span>' + t('shipping') + '</span><b>' +
+        (q.shipping ? IC.util.money(q.shipping) : t('free')) + '</b></div>' +
+      '<div class="kv kv--total"><span>' + t('orderTotal') + '</span><b>' +
+        IC.util.money(q.total) + '</b></div>';
+
+    var btn = root.querySelector('#ic-buy');
+    if (btn) btn.innerHTML = IC.icon('wallet') + ' ' + t('buyNow') + ' · ' + IC.util.money(q.total);
+  }
+
+  function paintFulfilment(root) {
+    IC.util.els('[data-act="fulfil"]', root).forEach(function (b) {
+      b.classList.toggle('is-active', b.getAttribute('data-v') === fulfilId);
+    });
+    var picker = root.querySelector('#ic-pickup');
+    if (picker) picker.hidden = fulfilId !== 'cabinet';
+  }
+
+  function checkout(root) {
+    var q = quote(), t = IC.i18n.t;
+    var st = stations.filter(function (s) { return s.id === pickupStationId; })[0];
+
+    IC.sheet.open(
+      '<h2 class="h2" style="margin-top:0">' + t('purchaseConfirm') + '</h2>' +
+      '<div class="card card--flat">' +
+        '<div class="kv"><span>' + IC.util.esc(name(product)) + '</span><b>× ' + q.qty + '</b></div>' +
+        '<div class="kv"><span>' + t('fulfilmentTitle') + '</span><b style="font-size:13px">' +
+          t(fulfilId === 'cabinet' ? 'pickupCabinet' : 'sfExpress') + '</b></div>' +
+        (fulfilId === 'cabinet' && st
+          ? '<div class="kv"><span>' + t('collectAt') + '</span><b style="font-size:13px">' +
+              IC.util.esc(stationName(st)) + '</b></div>' : '') +
+        (q.credit > 0
+          ? '<div class="kv"><span>' + t('rentToOwn') + '</span><b style="color:var(--ic-mint)">−' +
+              IC.util.money(q.credit) + '</b></div>' : '') +
+        '<div class="kv kv--total"><span>' + t('orderTotal') + '</span><b>' +
+          IC.util.money(q.total) + '</b></div>' +
+      '</div>' +
+      '<p class="tiny" style="margin-top:10px">' + t('purchaseHint') + '</p>' +
+      '<div class="stack" style="margin-top:14px">' +
+        '<button class="btn" data-act="pay">' + IC.icon('shield') + ' ' + t('purchaseConfirm') + '</button>' +
+        '<button class="btn btn--ghost" data-act="sheet-close">' + t('cancel') + '</button>' +
+      '</div>',
+      function (sheet) {
+        IC.util.on(sheet, '[data-act="pay"]', function (e, btn) {
+          btn.disabled = true;
+          btn.innerHTML = IC.i18n.isEn() ? 'Charging…' : '付款處理中…';
+          IC.api.createPurchase({
+            sku: product.sku, qty: q.qty, fulfilment: fulfilId,
+            pickupStationId: fulfilId === 'cabinet' ? pickupStationId : null,
+            credit: q.credit, total: q.total
+          }).then(function (order) {
+            IC.sheet.close();
+            IC.router.go('purchase/' + order.id);
+          }).catch(function () {
+            btn.disabled = false;
+            btn.innerHTML = IC.icon('shield') + ' ' + t('purchaseConfirm');
+            IC.toast(IC.i18n.isEn() ? 'Payment failed — try again' : '付款失敗，請重試');
+          });
+        });
+      }
+    );
+  }
+
+  return {
+    tab: 'profile',
+
+    render: function () {
+      return IC.topbar(IC.i18n.t('shopTitle')) +
+        '<div class="screen__body pad" id="ic-shop">' +
+          '<div class="empty">' + IC.icon('fan') + '</div>' +
+        '</div>';
+    },
+
+    mount: function (root) {
+      qty = 1; fulfilId = 'cabinet'; pickupStationId = null;
+      var body = root.querySelector('#ic-shop');
+      var t = IC.i18n.t, r = IC.config.retail;
+
+      Promise.all([
+        IC.api.listProducts(),
+        IC.api.listStations(),
+        IC.store.get().signedIn ? IC.api.rentalSpendInWindow() : Promise.resolve(0)
+      ]).then(function (res) {
+        product = res[0][0];
+        stations = res[1].filter(function (s) { return !s.offline; });
+        rentalSpend = res[2];
+        pickupStationId = stations.length ? stations[0].id : null;
+
+        var member = isMember();
+
+        body.innerHTML = '' +
+          '<div class="fanwrap"><div class="fan fan--slow">' + IC.icon('fan') + '</div></div>' +
+
+          '<div class="spread">' +
+            '<h1 class="h1" style="font-size:19px;margin:0">' + IC.util.esc(name(product)) + '</h1>' +
+            '<span class="tag ' + (product.inStock ? 'tag--live' : 'tag--warn') + '">' +
+              t(product.inStock ? 'inStock' : 'outOfStock') + '</span>' +
+          '</div>' +
+          '<p class="muted" style="margin:6px 0 16px">' +
+            IC.util.esc(IC.i18n.isEn() ? product.tagline_en : product.tagline_zh) + '</p>' +
+
+          '<div class="card">' +
+            '<div class="spread">' +
+              '<div>' +
+                '<div class="muted" style="font-size:12px">' +
+                  t(member ? 'memberPrice' : 'listPrice') + '</div>' +
+                '<div style="font-size:30px;font-weight:800;color:var(--ic-ice);line-height:1.15">' +
+                  IC.util.money(member ? r.memberPrice : r.listPrice) + '</div>' +
+                (member
+                  ? '<div class="tiny" style="text-decoration:line-through">' +
+                      IC.util.money(r.listPrice) + '</div>'
+                  : '') +
+              '</div>' +
+              '<span class="tag tag--pilot">' + t('warranty') + ' ' +
+                r.warrantyMonths + t('months') + '</span>' +
+            '</div>' +
+            (member ? '<p class="tiny" style="margin:8px 0 0">' + t('memberPriceNote') + '</p>' : '') +
+          '</div>' +
+
+          (r.rentToOwn.enabled && rentalSpend > 0
+            ? '<div class="card" style="border-color:rgba(91,242,198,.28)">' +
+                '<div class="spread"><span class="muted" style="font-size:13px">' + t('rentToOwn') +
+                '</span><b style="color:var(--ic-mint)">−' +
+                IC.util.money(Math.min(rentalSpend, r.rentToOwn.maxCredit)) + '</b></div>' +
+                '<p class="tiny" style="margin:6px 0 0">' +
+                  t('rentToOwnNote', { d: r.rentToOwn.windowDays, m: r.rentToOwn.maxCredit.toFixed(0) }) +
+                '</p></div>'
+            : '') +
+
+          '<h2 class="h2">' + t('quantity') + '</h2>' +
+          '<div class="speeds">' + [1, 2, 3].map(function (n) {
+            return '<button data-act="qty" data-v="' + n + '"' +
+              (n === 1 ? ' class="is-active"' : '') + '>' + n + '</button>';
+          }).join('') + '</div>' +
+
+          '<h2 class="h2">' + t('fulfilmentTitle') + '</h2>' +
+          '<div class="list">' +
+            r.fulfilment.map(function (f) {
+              var k = f.id === 'cabinet' ? 'pickupCabinet' : 'sfExpress';
+              return '<button class="row" data-act="fulfil" data-v="' + f.id + '">' +
+                '<span class="row__icon">' + IC.icon(f.id === 'cabinet' ? 'box' : 'pin') + '</span>' +
+                '<span class="row__main"><span class="row__title" style="font-size:14px">' + t(k) + '</span>' +
+                '<span class="row__sub">' + t(k + 'Sub') + '</span></span>' +
+                '<span class="tag tag--done">' + (f.fee ? IC.util.money(f.fee) : t('free')) + '</span>' +
+              '</button>';
+            }).join('') +
+          '</div>' +
+
+          '<div id="ic-pickup" style="margin-top:10px">' +
+            '<label class="muted" style="font-size:12px">' + t('pickupPoint') + '</label>' +
+            '<select class="field" id="ic-pickup-sel" style="margin-top:6px">' +
+              stations.map(function (s) {
+                return '<option value="' + IC.util.esc(s.id) + '">' +
+                  IC.util.esc(stationName(s)) + '</option>';
+              }).join('') +
+            '</select>' +
+          '</div>' +
+
+          '<h2 class="h2">' + t('specs') + '</h2>' +
+          '<div class="card">' + product.specs.map(function (sp) {
+            return '<div class="kv"><span>' + IC.util.esc(IC.i18n.isEn() ? sp.k_en : sp.k_zh) +
+              '</span><b style="font-size:13px">' +
+              IC.util.esc(IC.i18n.isEn() ? sp.v_en : sp.v_zh) + '</b></div>';
+          }).join('') + '</div>' +
+
+          '<h2 class="h2">' + t('notIncluded') + '</h2>' +
+          '<div class="card card--flat"><p class="muted" style="margin:0;font-size:13px">' +
+            IC.util.esc(IC.i18n.isEn() ? product.notIncluded_en : product.notIncluded_zh) +
+          '</p></div>' +
+
+          '<h2 class="h2">' + t('orderTotal') + '</h2>' +
+          '<div class="card" id="ic-shop-summary"></div>' +
+
+          '<button class="btn" id="ic-buy" style="margin-top:16px"' +
+            (product.inStock ? '' : ' disabled') + '></button>';
+
+        paintFulfilment(body);
+        paintSummary(body);
+
+        IC.util.on(body, '[data-act="qty"]', function (e, el) {
+          qty = Number(el.getAttribute('data-v'));
+          IC.util.els('[data-act="qty"]', body).forEach(function (b) {
+            b.classList.toggle('is-active', Number(b.getAttribute('data-v')) === qty);
+          });
+          paintSummary(body);
+        });
+
+        IC.util.on(body, '[data-act="fulfil"]', function (e, el) {
+          fulfilId = el.getAttribute('data-v');
+          paintFulfilment(body);
+          paintSummary(body);
+        });
+
+        var sel = body.querySelector('#ic-pickup-sel');
+        if (sel) sel.addEventListener('change', function () { pickupStationId = sel.value; });
+
+        body.querySelector('#ic-buy').addEventListener('click', function () {
+          if (!IC.store.get().signedIn) {
+            IC.toast(IC.i18n.t('loginRequired'));
+            return IC.router.go('login?next=shop');
+          }
+          checkout(root);
+        });
+      });
+    },
+
+    unmount: function () { IC.sheet.close(); }
+  };
+})();
+
+/* --- purchase receipt ---------------------------------------------------- */
+IC.routes.purchase = {
+  tab: 'profile',
+
+  render: function () {
+    return IC.topbar(IC.i18n.t('purchased')) +
+      '<div class="screen__body pad" id="ic-purchase"></div>';
+  },
+
+  mount: function (root, params) {
+    var body = root.querySelector('#ic-purchase');
+    var t = IC.i18n.t;
+
+    Promise.all([IC.api.listOrders(), IC.api.listStations(), IC.api.listProducts()])
+      .then(function (res) {
+        var o = res[0].filter(function (x) { return x.id === params.id; })[0];
+        if (!o) {
+          body.innerHTML = '<div class="empty">' + IC.icon('warn') + '<div>Order not found</div></div>';
+          return;
+        }
+        var st = res[1].filter(function (x) { return x.id === o.pickupStationId; })[0];
+        var p = res[2].filter(function (x) { return x.sku === o.sku; })[0];
+
+        body.innerHTML = '' +
+          '<div class="fanwrap"><div class="fan fan--slow">' + IC.icon('check') + '</div></div>' +
+          '<h1 class="h1 center" style="font-size:22px">' + t('purchased') + '</h1>' +
+          '<p class="muted center" style="margin-top:0">' + IC.util.esc(o.id) + '</p>' +
+
+          '<div class="card" style="margin-top:14px">' +
+            '<div class="kv"><span>' + (p ? IC.util.esc(IC.i18n.isEn() ? p.name_en : p.name_zh) : o.sku) +
+              '</span><b>× ' + o.qty + '</b></div>' +
+            '<div class="kv"><span>' + t('fulfilmentTitle') + '</span><b style="font-size:13px">' +
+              t(o.fulfilment === 'cabinet' ? 'pickupCabinet' : 'sfExpress') + '</b></div>' +
+            (st ? '<div class="kv"><span>' + t('collectAt') + '</span><b style="font-size:13px">' +
+              IC.util.esc(IC.i18n.isEn() ? st.name_en : st.name_zh) + '</b></div>' : '') +
+            (o.credit ? '<div class="kv"><span>' + t('rentToOwn') + '</span>' +
+              '<b style="color:var(--ic-mint)">−' + IC.util.money(o.credit) + '</b></div>' : '') +
+            '<div class="kv kv--total"><span>' + t('orderTotal') + '</span><b>' +
+              IC.util.money(o.amount) + '</b></div>' +
+          '</div>' +
+
+          (o.fulfilment === 'cabinet'
+            ? '<div class="center" style="margin-top:18px">' +
+                '<div style="background:#fff;border-radius:18px;padding:14px;display:inline-block">' +
+                  '<canvas id="ic-pickup-qr" width="180" height="180" style="display:block"></canvas>' +
+                '</div>' +
+                '<p class="tiny" style="margin-top:10px">' +
+                  (IC.i18n.isEn() ? 'Show this at the cabinet to collect.'
+                                  : '於機櫃出示此二維碼即可取貨。') + '</p>' +
+              '</div>'
+            : '<p class="tiny center" style="margin-top:18px">' + t('purchaseHint') + '</p>') +
+
+          '<button class="btn" style="margin-top:18px" data-act="home">' + t('backHome') + '</button>';
+
+        var c = body.querySelector('#ic-pickup-qr');
+        if (c) IC.qr.draw(c, 'instantcool:pickup:' + o.id);
+
+        IC.util.on(root, '[data-act="home"]', function () { IC.router.go('home'); });
+      });
+  }
+};
+
+/* ==== src/views/partner.js ==== */
+/* ==========================================================================
+   partner.js — venue-partner dashboard.
+
+   Not part of Yellowpal's consumer app; added because the whole Instantcool
+   pitch is "零投入、收入分成 35%". A venue manager who can watch their own
+   share accrue is far easier to sign than one who waits for a monthly PDF —
+   and signed venue agreements are unlock condition #2 in the funding deck.
+
+   Every figure runs through IC.pricing.split(), the same engine that bills the
+   renter, so the venue's number can never disagree with ours.
+   ========================================================================== */
+window.IC = window.IC || {};
+
+IC.routes.partner = {
+  tab: 'profile',
+
+  render: function () {
+    return IC.topbar(IC.i18n.t('partnerDash')) +
+      '<div class="screen__body pad" id="ic-partner"></div>';
+  },
+
+  mount: function (root) {
+    IC.util.on(root, '[data-act="back"]', function () { IC.router.back(); });
+    var body = root.querySelector('#ic-partner');
+
+    IC.api.partnerSummary().then(function (p) {
+      var t = IC.i18n.t;
+      var e = IC.config.economics;
+      var series = p.dailyRentalsPerCabinet;
+      var cabinets = p.cabinets.length;
+      var online = p.cabinets.filter(function (c) { return c.online; }).length;
+
+      // Per-rental gross at the standard rate and the deck's average duration.
+      var grossPerRental = IC.pricing.quote(e.avgRentalHours * 60, false).gross;
+
+      var today = series[series.length - 1];
+      var todayGross = today * cabinets * grossPerRental;
+      var todayVenue = IC.pricing.venueShare(todayGross);
+
+      var monthRentals = series.reduce(function (a, b) { return a + b; }, 0) / series.length * 30 * cabinets;
+      var monthVenue = IC.pricing.venueShare(monthRentals * grossPerRental);
+
+      var util = today / IC.config.hardware.cabinetSlots; // rentals/day ÷ slots
+      var max = Math.max.apply(null, series);
+      var days = IC.i18n.isEn() ? ['M','T','W','T','F','S','S'] : ['一','二','三','四','五','六','日'];
+
+      body.innerHTML = '' +
+        IC.demoBanner().replace('class="demo-flag"', 'class="demo-flag" style="margin:0 0 14px"') +
+
+        '<div class="spread">' +
+          '<div><div style="font-size:18px;font-weight:800">' +
+            IC.util.esc(IC.i18n.isEn() ? p.venueName_en : p.venueName_zh) + '</div>' +
+            '<div class="muted" style="font-size:12px">' + t('revenueShare') + '</div></div>' +
+          '<span class="tag tag--pilot">' + t('statusPilot') + '</span>' +
+        '</div>' +
+
+        '<div class="metrics" style="margin-top:14px">' +
+          '<div class="metric"><div class="metric__label">' + t('todayRevenue') + '</div>' +
+            '<div class="metric__value">' + IC.util.money(todayVenue) + '</div></div>' +
+          '<div class="metric"><div class="metric__label">' + t('monthRevenue') + '</div>' +
+            '<div class="metric__value">' + IC.util.money(monthVenue) + '</div></div>' +
+          '<div class="metric"><div class="metric__label">' + t('rentalsPerDay') + '</div>' +
+            '<div class="metric__value">' + today.toFixed(1) +
+              '<small>/ ' + (IC.i18n.isEn() ? 'cabinet' : '機') + '</small></div></div>' +
+          '<div class="metric"><div class="metric__label">' + t('utilisation') + '</div>' +
+            '<div class="metric__value">' + Math.round(util * 100) + '<small>%</small></div></div>' +
+        '</div>' +
+
+        '<h2 class="h2">' + t('last7days') + ' · ' + t('rentalsPerDay') + '</h2>' +
+        '<div class="card">' +
+          '<div class="bars">' + series.map(function (v) {
+            return '<div style="height:' + Math.max(4, (v / max) * 100) + '%" title="' + v + '"></div>';
+          }).join('') + '</div>' +
+          '<div class="bars-x">' + days.map(function (d) { return '<span>' + d + '</span>'; }).join('') + '</div>' +
+        '</div>' +
+
+        '<h2 class="h2">' + t('cabinetStatus') + ' · ' + online + '/' + cabinets + ' ' + t('online') + '</h2>' +
+        '<div class="list">' + p.cabinets.map(function (c) {
+          return '<div class="row" style="cursor:default">' +
+            '<span class="row__icon">' + IC.icon('box') + '</span>' +
+            '<span class="row__main"><span class="row__title" style="font-size:14px">' +
+              IC.util.esc(c.id) + '</span>' +
+              '<span class="row__sub">' + c.fans + ' / ' + c.slots + ' ' + t('available') + '</span></span>' +
+            '<span class="tag ' + (c.online ? 'tag--live' : 'tag--warn') + '">' +
+              t(c.online ? 'online' : 'offline') + '</span></div>';
+        }).join('') + '</div>' +
+
+        '<p class="tiny" style="margin-top:16px">' +
+          (IC.i18n.isEn()
+            ? 'Figures come from the same pricing engine that bills renters: gross rental revenue at this venue × the 35% share.'
+            : '以上金額由與租客計費相同的定價引擎計算：本場地租借毛收入 × 35% 分成。') +
+        '</p>';
+    });
+  }
+};
+
+/* ==== src/main.js ==== */
+/* main.js — bootstrap. Loaded last; every module has registered by now. */
+(function () {
+  var app = document.getElementById('app');
+
+  /* Splash — brief, and skipped entirely on a mid-rental reload. */
+  function splash() {
+    var s = document.createElement('div');
+    s.className = 'splash';
+    s.innerHTML =
+      '<div class="splash__inner">' +
+        '<div class="logo">' +
+          '<span class="logo__mark">' + IC.icon('fan') + '</span>' +
+          '<span class="logo__text">instant<em>cool</em></span>' +
+        '</div>' +
+        '<div class="muted" style="font-size:13px">' + IC.config.brand.slogan_zh + '</div>' +
+      '</div>';
+    app.appendChild(s);
+    setTimeout(function () {
+      s.classList.add('is-out');
+      setTimeout(function () { s.remove(); }, 400);
+    }, 900);
+  }
+
+  var mount = document.createElement('div');
+  mount.id = 'view';
+  mount.style.cssText = 'flex:1;display:flex;flex-direction:column;min-height:0';
+  app.appendChild(mount);
+
+  IC.tabbar.mount(app);
+  IC.router.start(mount);
+
+  /* Global: any [data-act="back"] anywhere pops history. */
+  IC.util.on(app, '[data-act="back"]', function () { IC.router.back(); });
+
+  splash();
+
+  /* Expose a tiny console handle for demos and QA. */
+  window.instantcool = {
+    config: IC.config,
+    store: IC.store,
+    pricing: IC.pricing,
+    reset: function () { IC.store.reset(); location.hash = '#/home'; location.reload(); },
+    signIn: function () { IC.store.set({ signedIn: true }); IC.router.refresh(); }
+  };
+})();
+
+</script>
+</body>
+</html>
