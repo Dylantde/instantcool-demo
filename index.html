@@ -249,8 +249,8 @@ svg{width:20px;height:20px;flex:none}
 .stack{display:flex;flex-direction:column;gap:10px}
 .spread{display:flex;align-items:center;justify-content:space-between;gap:10px}
 
-.segmented{display:flex;gap:8px;padding:4px;background:var(--surface-2);border-radius:999px}
-.segmented button{flex:1;height:34px;border-radius:999px;font-size:13px;font-weight:600;color:var(--tx-2)}
+.segmented{display:flex;gap:6px;padding:4px;background:var(--surface-2);border-radius:999px}
+.segmented button{flex:1;min-width:0;height:34px;padding:0 6px;border-radius:999px;font-size:13px;font-weight:600;color:var(--tx-2);white-space:nowrap}
 .segmented button.is-active{background:var(--ic-ice);color:#04121A}
 
 .empty{padding:56px 24px;text-align:center;color:var(--tx-3)}
@@ -332,6 +332,19 @@ svg{width:20px;height:20px;flex:none}
   border-radius:var(--r-sm);margin:0 16px 12px;line-height:1.5;
 }
 
+/* ---------- policy documents -------------------------------------------- */
+.policy{margin-top:16px}
+.policy__sec + .policy__sec{margin-top:22px}
+.policy__h{font-size:15px;font-weight:700;margin:0 0 8px;color:var(--tx);text-wrap:balance}
+.policy__p{margin:0 0 10px;font-size:13.5px;line-height:1.75;color:var(--tx-2)}
+.policy__p:last-child{margin-bottom:0}
+.policy__ul{margin:8px 0 0;padding-left:18px}
+.policy__ul li{font-size:13.5px;line-height:1.75;color:var(--tx-2);margin-bottom:6px}
+.policy__ul li::marker{color:var(--ic-ice)}
+/* Inline policy links inside consent copy. */
+.policy-link{color:var(--ic-ice);text-decoration:underline;text-underline-offset:2px}
+.policy-link:focus-visible{outline:2px solid var(--ic-ice);outline-offset:2px;border-radius:3px}
+
 /* ---------- partner dashboard ------------------------------------------- */
 .metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .metric{background:var(--surface-2);border-radius:var(--r);padding:14px}
@@ -412,6 +425,17 @@ IC.config = {
       { id: 'cabinet', fee: 0.00, etaDays: 1 },
       { id: 'sfExpress', fee: 30.00, etaDays: 2 }
     ]
+  },
+
+  /* ---- legal ----
+     `reviewed` gates the draft notice on every policy page. It is false because
+     the policies in src/content/policies.js were drafted, not lawyered. Have a
+     Hong Kong solicitor review them, then set it true — in that order. */
+  legal: {
+    reviewed: false,
+    effectiveDate: '2026-09-15',
+    jurisdiction_zh: '香港特別行政區',
+    jurisdiction_en: 'Hong Kong SAR'
   },
 
   /* ---- hardware (產品目錄) ---- */
@@ -726,7 +750,7 @@ IC.i18n = (function () {
       rentConfirm: '確認租借', ratePerHour: '每小時', promoRate: '推廣價',
       deposit: '預授權按金', depositNote: '借用時凍結，歸還後自動解除，款項不會過戶。',
       billingNote: '以每 30 分鐘為單位計費，不足一節作一節計。',
-      agreeTerms: '我已閱讀並同意租借條款及私隱政策',
+      agreeTerms: '我已閱讀並同意租借條款及',
       unlockNow: '解鎖並取出風扇', unlocking: '正在解鎖…', slotOpened: '格口 {n} 已開啟',
 
       activeRental: '租借中', elapsed: '已使用', currentCharge: '目前費用',
@@ -768,6 +792,11 @@ IC.i18n = (function () {
       myCoupon: '我的推薦碼', referNote: '好友完成首次租借後，雙方各獲 30 分鐘免費使用。',
       copyCode: '複製代碼', copied: '已複製',
 
+      policies: '條款及政策', policyReturns: '退貨政策', policyPrivacy: '私隱政策',
+      policyDelivery: '送貨政策', viewPolicy: '查看',
+      effectiveFrom: '生效日期',
+      policyDraft: '草擬版本：本政策內容尚未經法律專業人士審閱，僅供示範及內部討論用途，不構成對閣下的法律承諾。',
+      policyGoverning: '本政策受香港特別行政區法律管轄，並按其詮釋。中英文版本如有歧義，概以中文版本為準。',
       faq: '常見問題', contactUs: '聯絡我們', aboutUs: '關於我們',
       faqUse: '使用', faqPay: '付款', faqReturn: '歸還',
 
@@ -777,7 +806,7 @@ IC.i18n = (function () {
       revenueShare: '場地分成 35%', last7days: '過去 7 日',
 
       login: '登入', mobile: '手機號碼', otp: '驗證碼', sendOtp: '發送驗證碼',
-      loginNote: '登入即表示您同意租借條款及私隱政策。',
+      loginNote: '登入即表示您同意租借條款及',
       loginRequired: '請先登入',
       cancel: '取消', close: '關閉', back: '返回', done: '完成', language: '語言'
     },
@@ -802,7 +831,7 @@ IC.i18n = (function () {
       deposit: 'Pre-authorised deposit',
       depositNote: 'Held at pickup, released automatically on return. No funds are transferred.',
       billingNote: 'Billed in 30-minute blocks; part blocks are charged in full.',
-      agreeTerms: 'I agree to the rental terms and privacy policy',
+      agreeTerms: 'I agree to the rental terms and the',
       unlockNow: 'Unlock and take a fan', unlocking: 'Unlocking…', slotOpened: 'Slot {n} is open',
 
       activeRental: 'Rental in progress', elapsed: 'Elapsed', currentCharge: 'Current charge',
@@ -846,6 +875,11 @@ IC.i18n = (function () {
       myCoupon: 'Your referral code', referNote: 'When your friend completes a first rental you both get 30 free minutes.',
       copyCode: 'Copy code', copied: 'Copied',
 
+      policies: 'Terms & policies', policyReturns: 'Returns Policy', policyPrivacy: 'Privacy Policy',
+      policyDelivery: 'Delivery Policy', viewPolicy: 'Read',
+      effectiveFrom: 'Effective from',
+      policyDraft: 'Draft: these policies have not been reviewed by a legal professional. They are here for demonstration and internal discussion, and are not a legal commitment to you.',
+      policyGoverning: 'These policies are governed by and construed under the laws of the Hong Kong SAR. Where the Chinese and English versions differ, the Chinese version prevails.',
       faq: 'FAQs', contactUs: 'Contact us', aboutUs: 'About us',
       faqUse: 'Use', faqPay: 'Pay', faqReturn: 'Return',
 
@@ -855,7 +889,7 @@ IC.i18n = (function () {
       revenueShare: '35% revenue share', last7days: 'Last 7 days',
 
       login: 'Sign in', mobile: 'Mobile number', otp: 'Verification code', sendOtp: 'Send code',
-      loginNote: 'By signing in you accept the rental terms and privacy policy.',
+      loginNote: 'By signing in you accept the rental terms and the',
       loginRequired: 'Please sign in first',
       cancel: 'Cancel', close: 'Close', back: 'Back', done: 'Done', language: 'Language'
     }
@@ -1121,6 +1155,260 @@ IC.fixtures = {
         a_en:'Fans carry a locator module. An overdue rental is charged against the pre-authorised deposit and the operations team follows up.' }
     ]}
   ]
+};
+
+/* ==== src/content/policies.js ==== */
+/* ==========================================================================
+   policies.js — 退貨政策 / 私隱政策 / 送貨政策
+
+   DRAFTS. Written to be specific to this business and grounded in Hong Kong
+   law, but NOT reviewed by a solicitor. `IC.config.legal.reviewed` is false,
+   which makes every policy page show a draft notice. Have these reviewed, then
+   flip that flag — do not flip it first.
+
+   Where the operational numbers come from: IC.config (warranty months, the
+   delivery fees, the rent-to-own cap). Editing the config updates the policy
+   text, so the two can never disagree.
+
+   Structure: each policy is { id, title_*, updated, sections: [{ h_*, p_*, ul_* }] }
+   ========================================================================== */
+window.IC = window.IC || {};
+
+IC.policies = (function () {
+  var r = function () { return IC.config.retail; };
+  var money = function (n) { return 'HK$' + Number(n).toFixed(0); };
+
+  return [
+    /* ------------------------------------------------------------------ */
+    {
+      id: 'returns',
+      icon: 'box',
+      title_zh: '退貨政策', title_en: 'Returns Policy',
+      lede_zh: '適用於零售購買的掛頸風扇',
+      lede_en: 'Applies to fans bought outright, not to rentals',
+      sections: [
+        {
+          h_zh: '一、適用範圍', h_en: '1. Scope',
+          p_zh: ['本政策只適用於透過 Instantcool 零售購買的掛頸風扇。',
+                 '共享租借服務不涉及退貨：租借以歸還機櫃的一刻結算，相關安排請參閱租借條款。'],
+          p_en: ['This policy covers fans purchased outright from Instantcool.',
+                 'It does not apply to the shared rental service — a rental settles the moment the fan is returned to a cabinet. See the rental terms for that.']
+        },
+        {
+          h_zh: '二、七日未開封退貨', h_en: '2. Seven-day unopened returns',
+          p_zh: ['自取貨日起 7 個曆日內，如產品未開封、包裝及配件完整，可申請退貨並退還已付款項。'],
+          p_en: ['Within 7 calendar days of collection, an unopened product with intact packaging and all accessories may be returned for a refund of what you paid.'],
+          ul_zh: ['原包裝、說明書及充電線須齊全',
+                  '產品封條未拆、未曾通電使用',
+                  '退貨運費由買方承擔；如屬品質問題則由本公司承擔'],
+          ul_en: ['Original packaging, manual and charging cable all present',
+                  'Seal unbroken and the unit never powered on',
+                  'Return postage is yours, unless the return is due to a fault']
+        },
+        {
+          h_zh: '三、衛生限制', h_en: '3. Hygiene exclusion',
+          p_zh: ['掛頸風扇屬貼身佩戴的個人衛生產品。產品一經拆封或配戴，除品質問題外，恕不接受無理由退貨。',
+                 '此限制並非本公司免責條款，而是為保障下一位使用者的衛生安全；與共享機隊每次歸還後進行紫外光消毒，是同一套衛生標準。'],
+          p_en: ['A neck fan is worn against the skin. Once unsealed or worn, it cannot be returned simply because you changed your mind — only for a fault.',
+                 'This is a hygiene standard rather than a disclaimer: it is the same reasoning behind the UV-C cycle every shared fan runs after each return.']
+        },
+        {
+          h_zh: '四、品質問題及保養', h_en: '4. Faults and warranty',
+          p_zh: ['產品享有 ' + '{warranty}' + ' 個月保養。保養期內因製造或物料缺陷導致故障，本公司將免費維修；無法維修時予以更換。',
+                 '收貨後 7 日內發現的功能故障，可選擇直接更換新機。',
+                 '本政策所述權利為額外提供，並不影響閣下於香港《貨品售賣條例》（第 26 章）及《管制免責條款條例》（第 71 章）下就貨品品質所享有的法定權利。'],
+          p_en: ['The fan carries a {warranty}-month warranty. A manufacturing or material defect within that period is repaired free of charge, or replaced if it cannot be repaired.',
+                 'A functional fault found within 7 days of receipt can be exchanged for a new unit instead.',
+                 'These rights are in addition to, and do not affect, your statutory rights under the Sale of Goods Ordinance (Cap. 26) and the Control of Exemption Clauses Ordinance (Cap. 71) of Hong Kong.']
+        },
+        {
+          h_zh: '五、不屬保養範圍', h_en: '5. Not covered',
+          ul_zh: ['人為損壞、跌撞、擠壓或外力造成的破損',
+                  '進水、浸沒或在雨中長時間使用造成的損壞',
+                  '自行拆解、改裝或交由非授權人士維修',
+                  '電池容量隨使用次數自然衰減（屬鋰電池正常特性）',
+                  '外觀磨損、刮花等不影響功能的痕跡'],
+          ul_en: ['Impact, crushing or other physical damage',
+                  'Water ingress, immersion, or prolonged use in rain',
+                  'Disassembly, modification, or repair by anyone not authorised by us',
+                  'Gradual loss of battery capacity through normal charge cycles',
+                  'Cosmetic wear and scratches that do not affect function']
+        },
+        {
+          h_zh: '六、以租轉購折抵的處理', h_en: '6. Rent-to-own credit on a return',
+          p_zh: ['如購買時使用了「以租轉購」折抵（上限 ' + '{credit}' + '），退款金額為閣下實際支付的款項。已折抵的租借消費不會以現金退還，亦不會回復為可再次使用的折抵額。'],
+          p_en: ['If the purchase used rent-to-own credit (capped at {credit}), the refund is the amount you actually paid. Credited rental spend is not refunded in cash and is not restored for reuse.']
+        },
+        {
+          h_zh: '七、退款方式及時間', h_en: '7. How refunds are made',
+          p_zh: ['退款循原付款途徑經支付服務商退回，一般需時 7 至 14 個工作天，實際到帳時間視乎發卡銀行。',
+                 '本公司不會以現金、轉數快或其他途徑退款至原付款帳戶以外的帳戶。']
+          ,
+          p_en: ['Refunds go back through the original payment method via our payment provider, typically in 7–14 working days depending on your card issuer.',
+                 'We do not refund to any account other than the one used to pay.']
+        },
+        {
+          h_zh: '八、如何申請', h_en: '8. How to request a return',
+          p_zh: ['請電郵至 ' + '{email}' + '，並提供訂單編號（P 開頭）、購買日期及問題描述；如屬故障，請附上照片或短片。本公司會在 2 個工作天內回覆並安排後續。'],
+          p_en: ['Email {email} with your order number (starting with P), the purchase date and a description of the problem; for a fault, attach a photo or short video. We reply within 2 working days.']
+        }
+      ]
+    },
+
+    /* ------------------------------------------------------------------ */
+    {
+      id: 'privacy',
+      icon: 'shield',
+      title_zh: '私隱政策', title_en: 'Privacy Policy',
+      lede_zh: '根據香港《個人資料（私隱）條例》（第 486 章）',
+      lede_en: 'Under the Personal Data (Privacy) Ordinance (Cap. 486)',
+      sections: [
+        {
+          h_zh: '一、我們收集甚麼', h_en: '1. What we collect',
+          ul_zh: ['手機號碼及驗證紀錄（用於登入）',
+                  '租借及購買紀錄：時間、時長、借還站點、金額',
+                  '所選站點位置。本平台不會在背景持續追蹤閣下的位置',
+                  '裝置及瀏覽器基本資料，用於排查故障',
+                  '送貨地址（僅限選擇速遞派送的零售訂單）'],
+          ul_en: ['Mobile number and verification records, used to sign in',
+                  'Rental and purchase records: time, duration, stations, amounts',
+                  'The stations you select. We do not track your location in the background',
+                  'Basic device and browser information, used for troubleshooting',
+                  'Delivery address, only for retail orders sent by courier']
+        },
+        {
+          h_zh: '二、我們不會接觸的資料', h_en: '2. What we never hold',
+          p_zh: ['本公司不會儲存閣下的完整信用卡號碼、有效日期或安全碼。付款及預授權按金由支付服務商以其託管頁面處理，本公司只取得交易代碼及卡號末四位。'],
+          p_en: ['We never store your full card number, expiry date or security code. Payment and the pre-authorised deposit are handled by our payment provider on its own hosted page; we receive only a transaction reference and the last four digits.']
+        },
+        {
+          h_zh: '三、收集目的', h_en: '3. Why we collect it',
+          ul_zh: ['提供借還服務、計算費用及處理付款',
+                  '客戶服務、故障跟進及爭議處理',
+                  '設備防盜、追蹤逾期未歸還的風扇',
+                  '統計服務使用情況以改善站點佈局',
+                  '履行法律、會計及稅務上的紀錄保存責任'],
+          ul_en: ['Running the service, calculating charges and taking payment',
+                  'Customer support, fault follow-up and dispute handling',
+                  'Preventing theft and recovering overdue fans',
+                  'Understanding usage so we can place cabinets better',
+                  'Meeting our legal, accounting and tax record-keeping duties']
+        },
+        {
+          h_zh: '四、資料會交給誰', h_en: '4. Who we share it with',
+          p_zh: ['本公司不會出售閣下的個人資料，亦不會用作第三方市場推廣。資料只會在必要範圍內轉移予：'],
+          p_en: ['We do not sell your personal data and do not pass it to third parties for their own marketing. We transfer it only as far as necessary to:'],
+          ul_zh: ['支付服務商——處理付款、預授權及退款',
+                  '物流服務商——僅限速遞訂單的收件人姓名、電話及地址',
+                  '執法機關或監管機構——在法律要求或法院命令下',
+                  '場地合作夥伴——只提供匯總統計（如每日租借次數），不含任何可識別個人身分的資料'],
+          ul_en: ['Our payment provider, to process payments, holds and refunds',
+                  'Our courier, limited to the recipient name, phone and address on courier orders',
+                  'Law enforcement or regulators, where required by law or court order',
+                  'Venue partners — aggregate statistics only (such as rentals per day), never anything that identifies an individual']
+        },
+        {
+          h_zh: '五、保留期限', h_en: '5. How long we keep it',
+          p_zh: ['個人資料只會保留至達成收集目的所需的時間。帳戶刪除後，登入資料及聯絡方式會在 30 日內清除；交易及會計紀錄則按稅務及公司法規定保留 7 年，之後銷毀。'],
+          p_en: ['We keep personal data only as long as the purpose requires. After you delete your account, sign-in details and contact information are erased within 30 days; transaction and accounting records are kept for 7 years as tax and company law require, then destroyed.']
+        },
+        {
+          h_zh: '六、保安措施', h_en: '6. Security',
+          p_zh: ['所有傳輸均經加密連線。存取個人資料的員工以工作需要為限。本平台於閣下裝置上只儲存語言偏好及租借中狀態，不會在瀏覽器儲存任何付款資料。'],
+          p_en: ['All traffic runs over an encrypted connection. Staff access is limited to those who need it for their work. On your device the app stores only your language preference and any rental in progress — never payment data.']
+        },
+        {
+          h_zh: '七、查閱及更正權利', h_en: '7. Your right to access and correct',
+          p_zh: ['根據《個人資料（私隱）條例》第 18 及 22 條，閣下有權查閱本公司持有關於閣下的個人資料，並要求更正不準確之處。',
+                 '請電郵至 ' + '{email}' + ' 提出要求。本公司會在 40 日內回覆。就查閱要求，本公司可能收取不超過條例所容許的行政費用。',
+                 '如對本公司的處理方式不滿，閣下可向香港個人資料私隱專員公署投訴。'],
+          p_en: ['Under sections 18 and 22 of the Ordinance you may ask for a copy of the personal data we hold about you, and ask us to correct anything inaccurate.',
+                 'Email {email} to make a request. We respond within 40 days. We may charge a fee for a data access request, not exceeding what the Ordinance allows.',
+                 'If you are unhappy with how we handle it, you may complain to the Office of the Privacy Commissioner for Personal Data, Hong Kong.']
+        },
+        {
+          h_zh: '八、政策修訂', h_en: '8. Changes to this policy',
+          p_zh: ['本政策如有修訂，會於本頁公布並更新生效日期。涉及重大變更時，本公司會另行通知已登記用戶。'],
+          p_en: ['Any revision is published on this page with an updated effective date. Where a change is significant we will notify registered users separately.']
+        }
+      ]
+    },
+
+    /* ------------------------------------------------------------------ */
+    {
+      id: 'delivery',
+      icon: 'pin',
+      title_zh: '送貨政策', title_en: 'Delivery Policy',
+      lede_zh: '適用於零售訂單的取貨及派送安排',
+      lede_en: 'How retail orders reach you',
+      sections: [
+        {
+          h_zh: '一、兩種取貨方式', h_en: '1. Two ways to receive an order',
+          ul_zh: ['機櫃自取——免費，一般於下單後 1 個工作天可取',
+                  '順豐速運——' + '{sf}' + '，香港地址一般 2 個工作天送達'],
+          ul_en: ['Collect at a cabinet — free, usually ready the next working day',
+                  'SF Express — {sf}, typically 2 working days to a Hong Kong address']
+        },
+        {
+          h_zh: '二、機櫃自取', h_en: '2. Cabinet collection',
+          p_zh: ['付款後，閣下會在訂單頁取得取貨二維碼。請於所選站點的機櫃出示二維碼領取。',
+                 '取貨二維碼自備貨完成起 7 日內有效。逾期未領取，訂單將自動取消並全額退款；如欲重新購買，須另行下單。',
+                 '如所選站點在備貨期間暫停服務，本公司會主動聯絡閣下更改自取站點。'],
+          p_en: ['After payment your order page shows a collection QR code. Show it at the cabinet at the station you chose.',
+                 'The code is valid for 7 days from the moment the order is ready. If it is not collected in time the order is cancelled and refunded in full; you would need to order again.',
+                 'If your chosen station goes out of service while your order is being prepared, we will contact you to change it.']
+        },
+        {
+          h_zh: '三、派送範圍', h_en: '3. Where we deliver',
+          p_zh: ['本公司只派送至香港特別行政區地址，暫不設海外或中國內地派送，亦不接受郵政信箱地址。',
+                 '偏遠地區、離島及部分需轉運的地址，送達時間可能較長，個別地點或需附加派送費，落單後會另行通知。'],
+          p_en: ['We deliver to Hong Kong SAR addresses only — no overseas or mainland China delivery, and no PO boxes.',
+                 'Remote areas, the outlying islands and addresses needing transfer may take longer, and a few locations carry a surcharge which we will tell you about after you order.']
+        },
+        {
+          h_zh: '四、鋰電池運送限制', h_en: '4. Lithium battery restrictions',
+          p_zh: ['掛頸風扇內置 ' + '{mah}' + ' mAh 鋰離子電池，屬受管制的危險品。因此訂單只以陸路或海路方式派送，不會使用空運。',
+                 '此限制由運輸安全規例訂定，並非本公司可豁免的安排；亦是本公司不設離港派送的原因。'],
+          p_en: ['The fan contains a {mah} mAh lithium-ion cell, which is regulated as a dangerous good. Orders therefore travel by road or sea only, never by air.',
+                 'This is set by transport safety rules rather than by us, and it is also why we do not ship outside Hong Kong.']
+        },
+        {
+          h_zh: '五、派送失敗', h_en: '5. Failed delivery',
+          p_zh: ['如因地址不完整、無人收件或聯絡不上而導致派送失敗，速遞商一般會嘗試第二次派送。兩次失敗後，貨件將退回本公司。',
+                 '退回後本公司會聯絡閣下：可安排重新派送（須支付一次運費），或取消訂單退款（扣除已產生的運費）。'],
+          p_en: ['If delivery fails because the address is incomplete, nobody is there, or you cannot be reached, the courier normally tries once more. After two failures the parcel comes back to us.',
+                 'We will then contact you to either arrange redelivery (one delivery fee applies) or cancel and refund, less the delivery cost already incurred.']
+        },
+        {
+          h_zh: '六、破損或短缺', h_en: '6. Damage or missing items',
+          p_zh: ['請於收件時檢查包裝。如發現外箱明顯破損、產品損壞或配件短缺，請於簽收後 48 小時內連同照片電郵至 ' + '{email}'
+                 + '，本公司會安排補發或更換。',
+                 '逾 48 小時提出的運送途中損壞申報，本公司未必能向速遞商追究，處理上會受到限制。'],
+          p_en: ['Check the parcel on receipt. If the outer box is visibly damaged, the product is damaged, or something is missing, email {email} with photos within 48 hours of signing for it and we will replace or resend.',
+                 'Transit damage reported after 48 hours may no longer be claimable against the courier, which limits what we can do.']
+        },
+        {
+          h_zh: '七、延誤', h_en: '7. Delays',
+          p_zh: ['颱風、黑色暴雨警告、公眾假期及速遞商旺季均可能影響送達時間。八號或以上熱帶氣旋警告及黑色暴雨警告生效期間，派送及機櫃備貨會暫停，警告取消後恢復。',
+                 '上述時間為估計，並非保證送達日期。'],
+          p_en: ['Typhoons, black rainstorm warnings, public holidays and courier peak season all affect timing. Delivery and order preparation pause while a No. 8 or higher tropical cyclone signal or a black rainstorm warning is in force, and resume once it is lifted.',
+                 'The times above are estimates, not guaranteed delivery dates.']
+        }
+      ]
+    }
+  ];
+})();
+
+/** Resolve the {placeholders} above from live config, so text can never
+    contradict the app's actual prices and specs. */
+IC.policyText = function (s) {
+  var c = IC.config, sf = c.retail.fulfilment.filter(function (f) { return f.id === 'sfExpress'; })[0];
+  return String(s)
+    .replace(/\{warranty\}/g, c.retail.warrantyMonths)
+    .replace(/\{credit\}/g, 'HK$' + c.retail.rentToOwn.maxCredit.toFixed(0))
+    .replace(/\{sf\}/g, 'HK$' + (sf ? sf.fee.toFixed(0) : '0'))
+    .replace(/\{mah\}/g, c.hardware.fanBatteryMah.toLocaleString('en-US'))
+    .replace(/\{email\}/g, c.brand.contact.email);
 };
 
 /* ==== src/api/kpay.js ==== */
@@ -1950,11 +2238,13 @@ IC.routes.rent = (function () {
           '<label class="row" style="margin-top:14px;align-items:flex-start;cursor:pointer">' +
             '<input type="checkbox" id="ic-agree" style="width:20px;height:20px;accent-color:#38E1FF;margin-top:1px">' +
             '<span class="row__main"><span class="row__sub" style="font-size:13px;color:var(--tx-2)">' +
-              IC.i18n.t('agreeTerms') + '</span></span>' +
+              IC.consentLine('agreeTerms', 'privacy') + '</span></span>' +
           '</label>' +
 
           '<button class="btn" id="ic-unlock" style="margin-top:16px" disabled>' +
             IC.icon('shield') + ' ' + IC.i18n.t('unlockNow') + '</button>';
+
+        IC.bindPolicyLinks(body);
 
         var agree = body.querySelector('#ic-agree');
         var btn = body.querySelector('#ic-unlock');
@@ -2286,7 +2576,9 @@ IC.routes.profile = {
       { act: 'refer',   icon: 'users',  title: t('referFriend') },
       { act: 'shop',    icon: 'box',    title: t('shop'), sub: t('shopEntrySub') },
       { act: 'partner', icon: 'chart',  title: t('partner'), sub: t('revenueShare') },
-      { act: 'support', icon: 'help',   title: t('support') }
+      { act: 'support',  icon: 'help',   title: t('support') },
+      { act: 'policies', icon: 'shield', title: t('policies'),
+        sub: t('policyReturns') + ' · ' + t('policyPrivacy') + ' · ' + t('policyDelivery') }
     ];
 
     var tail = st.signedIn
@@ -2307,7 +2599,9 @@ IC.routes.profile = {
 
   mount: function (root) {
     var go = { wallet: 'wallet', history: 'history', promo: 'promo', refer: 'refer',
-               shop: 'shop', support: 'support', partner: 'partner', login: 'login' };
+               shop: 'shop', support: 'support', partner: 'partner', login: 'login',
+               // Lands on Support with the policies tab already open.
+               policies: 'support?tab=policies' };
 
     Object.keys(go).forEach(function (act) {
       IC.util.on(root, '[data-act="' + act + '"]', function () { IC.router.go(go[act]); });
@@ -2597,6 +2891,7 @@ IC.routes.refer = {
 window.IC = window.IC || {};
 
 IC.routes.support = (function () {
+  var TABS = ['faq', 'contact', 'policies', 'about'];
   var tab = 'faq';
 
   function faqHtml() {
@@ -2627,6 +2922,18 @@ IC.routes.support = (function () {
           : '如租借未能結束或機櫃故障，請提供訂單編號（R…）以便跟進。') + '</p>';
   }
 
+  function policiesHtml() {
+    return '<div class="list" style="margin-top:8px">' +
+      IC.policies.map(function (o) {
+        return IC.row({ act: 'policy', value: o.id, icon: o.icon,
+                        title: IC.i18n.isEn() ? o.title_en : o.title_zh,
+                        sub: IC.i18n.isEn() ? o.lede_en : o.lede_zh });
+      }).join('') +
+      '</div>' +
+      (IC.config.legal.reviewed ? '' :
+        '<p class="tiny" style="margin-top:14px">' + IC.i18n.t('policyDraft') + '</p>');
+  }
+
   function aboutHtml() {
     var b = IC.config.brand;
     return '<div class="card" style="margin-top:8px">' +
@@ -2653,7 +2960,10 @@ IC.routes.support = (function () {
 
   function paint(root) {
     var box = root.querySelector('#ic-support-body');
-    box.innerHTML = tab === 'faq' ? faqHtml() : tab === 'contact' ? contactHtml() : aboutHtml();
+    box.innerHTML = tab === 'faq' ? faqHtml()
+                  : tab === 'contact' ? contactHtml()
+                  : tab === 'policies' ? policiesHtml()
+                  : aboutHtml();
     IC.util.els('.segmented button', root).forEach(function (b) {
       b.classList.toggle('is-active', b.getAttribute('data-v') === tab);
     });
@@ -2669,13 +2979,16 @@ IC.routes.support = (function () {
           '<div class="segmented">' +
             '<button data-act="seg" data-v="faq">' + t('faq') + '</button>' +
             '<button data-act="seg" data-v="contact">' + t('contactUs') + '</button>' +
+            '<button data-act="seg" data-v="policies">' + t('policies') + '</button>' +
             '<button data-act="seg" data-v="about">' + t('aboutUs') + '</button>' +
           '</div>' +
           '<div id="ic-support-body"></div>' +
         '</div>';
     },
 
-    mount: function (root) {
+    mount: function (root, params) {
+      // Deep link: #/support?tab=policies opens straight on the policies list.
+      if (params && params.tab && TABS.indexOf(params.tab) !== -1) tab = params.tab;
       paint(root);
       IC.util.on(root, '[data-act="back"]', function () { IC.router.back(); });
       IC.util.on(root, '[data-act="seg"]', function (e, el) {
@@ -2688,12 +3001,157 @@ IC.routes.support = (function () {
         body.hidden = open;
         el.querySelector('span:last-child').textContent = open ? '+' : '–';
       });
+      IC.util.on(root, '[data-act="policy"]', function (e, el) {
+        IC.router.go('policy/' + el.getAttribute('data-value'));
+      });
       IC.util.on(root, '[data-act="email"]', function () {
         location.href = 'mailto:' + IC.config.brand.contact.email;
       });
       IC.util.on(root, '[data-act="phone"]', function () {
         location.href = 'tel:' + IC.config.brand.contact.phone;
       });
+    }
+  };
+})();
+
+/* ==== src/views/policy.js ==== */
+/* ==========================================================================
+   policy.js — renders one document from IC.policies at #/policy/:id.
+
+   One view for all three so they stay visually identical; adding a fourth
+   policy means adding an entry to src/content/policies.js and nothing else.
+   ========================================================================== */
+window.IC = window.IC || {};
+
+IC.routes.policy = (function () {
+  function find(id) {
+    return IC.policies.filter(function (p) { return p.id === id; })[0] || null;
+  }
+
+  function title(p) { return IC.i18n.isEn() ? p.title_en : p.title_zh; }
+  function lede(p) { return IC.i18n.isEn() ? p.lede_en : p.lede_zh; }
+
+  /** Escape, resolve {placeholders}, then render as a paragraph or bullet. */
+  function line(s) {
+    return IC.policyText(IC.util.esc(s));
+  }
+
+  function sectionHtml(sec) {
+    var en = IC.i18n.isEn();
+    var ps = (en ? sec.p_en : sec.p_zh) || [];
+    var us = (en ? sec.ul_en : sec.ul_zh) || [];
+
+    return '<section class="policy__sec">' +
+      '<h2 class="policy__h">' + IC.util.esc(en ? sec.h_en : sec.h_zh) + '</h2>' +
+      ps.map(function (p) { return '<p class="policy__p">' + line(p) + '</p>'; }).join('') +
+      (us.length
+        ? '<ul class="policy__ul">' +
+            us.map(function (u) { return '<li>' + line(u) + '</li>'; }).join('') +
+          '</ul>'
+        : '') +
+      '</section>';
+  }
+
+  /**
+   * Open a policy in a bottom sheet instead of navigating.
+   * Used from consent points (rent confirmation, checkout) so reading the
+   * policy does not unwind the screen the user is part-way through — a
+   * navigation there would reset the consent checkbox they just ticked.
+   */
+  IC.policySheet = function (id) {
+    var p = find(id);
+    if (!p) return;
+    var legal = IC.config.legal;
+    IC.sheet.open(
+      '<h2 class="h2" style="margin-top:0">' + IC.util.esc(title(p)) + '</h2>' +
+      (legal.reviewed ? '' :
+        '<div class="demo-flag" style="margin:0 0 12px">' +
+          IC.util.esc(IC.i18n.t('policyDraft')) + '</div>') +
+      '<div class="policy" style="margin-top:0">' +
+        p.sections.map(sectionHtml).join('') + '</div>' +
+      '<button class="btn btn--ghost" style="margin-top:16px" data-act="sheet-close">' +
+        IC.i18n.t('close') + '</button>'
+    );
+  };
+
+  /**
+   * Consent sentence + inline policy link, punctuated for the locale.
+   * Chinese takes no space before the link and ends in 。; English takes a
+   * space and a full stop. Getting this wrong looks sloppy in exactly the
+   * place a user is being asked to agree to something.
+   */
+  IC.consentLine = function (textKey, policyId) {
+    var en = IC.i18n.isEn();
+    return IC.i18n.t(textKey) + (en ? ' ' : '') + IC.policyLink(policyId) + (en ? '.' : '。');
+  };
+
+  /** Inline link markup for consent copy. */
+  IC.policyLink = function (id) {
+    var p = find(id);
+    if (!p) return '';
+    return '<button type="button" class="policy-link" data-act="open-policy" ' +
+           'data-value="' + IC.util.esc(id) + '">' +
+           IC.util.esc(IC.i18n.isEn() ? p.title_en : p.title_zh) + '</button>';
+  };
+
+  /** Wire the inline links on any screen that renders them. */
+  IC.bindPolicyLinks = function (root) {
+    IC.util.on(root, '[data-act="open-policy"]', function (e, el) {
+      e.preventDefault();
+      e.stopPropagation();
+      IC.policySheet(el.getAttribute('data-value'));
+    });
+  };
+
+  return {
+    tab: 'profile',
+
+    render: function (params) {
+      var p = find(params.id);
+      var t = IC.i18n.t;
+
+      if (!p) {
+        return IC.topbar(t('policies')) +
+          '<div class="screen__body pad"><div class="empty">' + IC.icon('warn') +
+          '<div>' + (IC.i18n.isEn() ? 'Policy not found' : '找不到此政策') + '</div></div></div>';
+      }
+
+      var legal = IC.config.legal;
+
+      return IC.topbar(title(p)) +
+        '<div class="screen__body pad">' +
+          (legal.reviewed ? '' :
+            '<div class="demo-flag" style="margin:0 0 14px">' +
+              IC.util.esc(t('policyDraft')) + '</div>') +
+
+          '<p class="muted" style="margin:0 0 4px">' + IC.util.esc(lede(p)) + '</p>' +
+          '<p class="tiny" style="margin:0 0 6px">' +
+            IC.util.esc(t('effectiveFrom')) + '：' + IC.util.esc(legal.effectiveDate) + '　·　' +
+            IC.util.esc(IC.config.brand.entity) + '</p>' +
+
+          '<div class="policy">' + p.sections.map(sectionHtml).join('') + '</div>' +
+
+          '<div class="divider"></div>' +
+          '<p class="tiny">' + IC.util.esc(t('policyGoverning')) + '</p>' +
+
+          '<div class="list" style="margin-top:16px">' +
+            IC.policies.filter(function (o) { return o.id !== p.id; }).map(function (o) {
+              return IC.row({ act: 'policy', value: o.id, icon: o.icon,
+                              title: IC.i18n.isEn() ? o.title_en : o.title_zh });
+            }).join('') +
+          '</div>' +
+
+          '<button class="btn btn--ghost btn--sm" style="margin-top:14px" data-act="contact">' +
+            IC.icon('help') + ' ' + t('contactUs') + '</button>' +
+        '</div>';
+    },
+
+    mount: function (root) {
+      IC.util.on(root, '[data-act="back"]', function () { IC.router.back(); });
+      IC.util.on(root, '[data-act="policy"]', function (e, el) {
+        IC.router.go('policy/' + el.getAttribute('data-value'));
+      });
+      IC.util.on(root, '[data-act="contact"]', function () { IC.router.go('support'); });
     }
   };
 })();
@@ -2725,12 +3183,14 @@ IC.routes.login = {
           '</div>' +
           '<button class="btn" data-act="login">' + t('login') + '</button>' +
         '</div>' +
-        '<p class="tiny center" style="margin-top:16px">' + t('loginNote') + '</p>' +
+        '<p class="tiny center" style="margin-top:16px">' +
+          IC.consentLine('loginNote', 'privacy') + '</p>' +
       '</div>';
   },
 
   mount: function (root, params) {
     IC.util.on(root, '[data-act="back"]', function () { IC.router.back(); });
+    IC.bindPolicyLinks(root);
 
     IC.util.on(root, '[data-act="send"]', function () {
       root.querySelector('#ic-otp').value = '135790';
@@ -2831,11 +3291,14 @@ IC.routes.shop = (function () {
           IC.util.money(q.total) + '</b></div>' +
       '</div>' +
       '<p class="tiny" style="margin-top:10px">' + t('purchaseHint') + '</p>' +
+      '<p class="tiny" style="margin-top:6px">' +
+        IC.policyLink('returns') + '　·　' + IC.policyLink('delivery') + '</p>' +
       '<div class="stack" style="margin-top:14px">' +
         '<button class="btn" data-act="pay">' + IC.icon('shield') + ' ' + t('purchaseConfirm') + '</button>' +
         '<button class="btn btn--ghost" data-act="sheet-close">' + t('cancel') + '</button>' +
       '</div>',
       function (sheet) {
+        IC.bindPolicyLinks(sheet);
         IC.util.on(sheet, '[data-act="pay"]', function (e, btn) {
           btn.disabled = true;
           btn.innerHTML = IC.i18n.isEn() ? 'Charging…' : '付款處理中…';
@@ -2967,10 +3430,14 @@ IC.routes.shop = (function () {
           '<div class="card" id="ic-shop-summary"></div>' +
 
           '<button class="btn" id="ic-buy" style="margin-top:16px"' +
-            (product.inStock ? '' : ' disabled') + '></button>';
+            (product.inStock ? '' : ' disabled') + '></button>' +
+
+          '<p class="tiny center" style="margin-top:12px">' +
+            IC.policyLink('returns') + '　·　' + IC.policyLink('delivery') + '</p>';
 
         paintFulfilment(body);
         paintSummary(body);
+        IC.bindPolicyLinks(body);
 
         IC.util.on(body, '[data-act="qty"]', function (e, el) {
           qty = Number(el.getAttribute('data-v'));
