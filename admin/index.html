@@ -1,0 +1,2298 @@
+<!doctype html>
+<html lang="zh-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="theme-color" content="#07090F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Instantcool 後台</title>
+<style>
+/* ==========================================================================
+   INSTANTCOOL 後台 — admin.css
+
+   A back office is read for hours at a time, so this is a light, dense
+   information surface rather than a restyled version of the consumer app.
+   The ice accent carries the brand across; everything else is built for
+   scanning tables and spotting the one row that needs attention.
+   ========================================================================== */
+
+:root{
+  /* brand */
+  --ic:#0E92BC;
+  --ic-deep:#0A7395;
+  --ic-soft:#E4F4FA;
+  --ic-ring:rgba(14,146,188,.28);
+
+  /* semantic — separate from the accent on purpose */
+  --ok:#0E8A63;      --ok-bg:#E2F5EE;
+  --warn:#A96407;    --warn-bg:#FDF0DC;
+  --bad:#C0392F;     --bad-bg:#FBE8E6;
+  --idle:#5B6B7C;    --idle-bg:#EDF1F5;
+
+  /* neutrals, biased very slightly cyan so they sit with the accent */
+  --bg:#F4F7F9;
+  --surface:#FFFFFF;
+  --surface-2:#F8FAFC;
+  --line:#E2E8EE;
+  --line-2:#CFD8E1;
+
+  --tx:#0D1B26;
+  --tx-2:#54657A;
+  --tx-3:#8695A6;
+
+  --r:10px; --r-lg:14px;
+  --nav-w:230px;
+  --top-h:60px;
+  --shadow:0 1px 2px rgba(13,27,38,.06),0 8px 24px rgba(13,27,38,.06);
+  --font:"PingFang HK","Hiragino Sans CNS","Noto Sans HK","Microsoft JhengHei",
+         -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--tx);font-family:var(--font);
+  font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{background:none;border:0;padding:0;cursor:pointer}
+a{color:var(--ic);text-decoration:none}
+svg{width:18px;height:18px;flex:none}
+:focus-visible{outline:2px solid var(--ic);outline-offset:2px;border-radius:4px}
+
+/* ---------- shell -------------------------------------------------------- */
+.shell{display:flex;min-height:100vh}
+
+.nav{
+  width:var(--nav-w);flex:none;background:#0C1C27;color:#C7D4DE;
+  display:flex;flex-direction:column;position:sticky;top:0;height:100vh;
+}
+.nav__brand{display:flex;align-items:center;gap:9px;height:var(--top-h);padding:0 18px;flex:none}
+.nav__brand svg{color:#3FC9EF;width:22px;height:22px}
+.nav__brand b{color:#fff;font-size:16px;font-weight:800;letter-spacing:-.01em}
+.nav__brand b em{font-style:normal;color:#3FC9EF}
+.nav__brand span{font-size:10px;color:#6C8091;margin-left:2px;letter-spacing:.08em}
+
+.nav__scroll{flex:1;overflow-y:auto;padding:6px 10px 18px}
+.nav__group{margin-top:14px;padding:0 8px 4px;font-size:10.5px;font-weight:700;
+  letter-spacing:.12em;color:#5E7285}
+.nav__item{
+  display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;
+  border-radius:8px;color:#C7D4DE;font-size:13.5px;text-align:left;margin-bottom:1px;
+}
+.nav__item:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav__item.is-active{background:var(--ic);color:#fff;font-weight:600}
+.nav__item.is-active svg{color:#fff}
+.nav__item svg{color:#7F94A6;width:17px;height:17px}
+.nav__badge{
+  margin-left:auto;background:var(--bad);color:#fff;font-size:10.5px;font-weight:700;
+  min-width:18px;height:18px;border-radius:9px;display:grid;place-items:center;padding:0 5px;
+}
+.nav__item.is-active .nav__badge{background:rgba(255,255,255,.28)}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+
+.top{
+  height:var(--top-h);flex:none;background:var(--surface);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:14px;padding:0 22px;position:sticky;top:0;z-index:20;
+}
+.top__title{font-size:16px;font-weight:700}
+.top__crumb{font-size:12px;color:var(--tx-3)}
+.top__right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.top__user{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:999px;
+  background:var(--surface-2);border:1px solid var(--line);font-size:12.5px}
+.top__user b{font-weight:600}
+.avatar{width:24px;height:24px;border-radius:50%;background:var(--ic);color:#fff;
+  display:grid;place-items:center;font-size:11px;font-weight:700}
+
+.page{padding:22px;max-width:1440px;width:100%}
+
+/* ---------- demo ribbon -------------------------------------------------- */
+.demo{
+  background:var(--warn-bg);border:1px solid #F0D8AE;color:var(--warn);
+  padding:9px 13px;border-radius:var(--r);font-size:12.5px;font-weight:600;margin-bottom:18px;
+}
+
+/* ---------- kpi cards ---------------------------------------------------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.kpi{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:15px 16px;position:relative;overflow:hidden;
+}
+.kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ic)}
+.kpi--ok::before{background:var(--ok)} .kpi--warn::before{background:var(--warn)}
+.kpi--bad::before{background:var(--bad)} .kpi--idle::before{background:var(--idle)}
+.kpi__label{font-size:12px;color:var(--tx-2);display:flex;align-items:center;gap:6px}
+.kpi__label svg{width:15px;height:15px;color:var(--tx-3)}
+.kpi__value{font-size:27px;font-weight:800;margin-top:5px;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi__value small{font-size:13px;font-weight:600;color:var(--tx-2);margin-left:3px}
+.kpi__sub{font-size:11.5px;color:var(--tx-3);margin-top:4px}
+.delta{font-size:11.5px;font-weight:700}
+.delta--up{color:var(--ok)} .delta--down{color:var(--bad)}
+
+/* ---------- panels ------------------------------------------------------- */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);margin-top:18px}
+.panel__head{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--line)}
+.panel__title{font-size:14px;font-weight:700}
+.panel__hint{font-size:12px;color:var(--tx-3)}
+.panel__tools{margin-left:auto;display:flex;align-items:center;gap:8px}
+.panel__body{padding:16px}
+.panel__body--flush{padding:0}
+
+/* ---------- tiles (the 待辦 / 智能檢測 grids) ----------------------------- */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{
+  border:1px solid var(--line);border-radius:var(--r);padding:13px 14px;text-align:left;
+  background:var(--surface-2);transition:border-color .12s,background .12s;
+}
+.tile:hover{border-color:var(--line-2);background:#fff}
+.tile__v{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.15}
+.tile__k{font-size:12px;color:var(--tx-2);margin-top:2px}
+.tile--attention{border-color:#F0C9C4;background:var(--bad-bg)}
+.tile--attention .tile__v{color:var(--bad)}
+.tile--warn{border-color:#F0D8AE;background:var(--warn-bg)}
+.tile--warn .tile__v{color:var(--warn)}
+.tile--clear .tile__v{color:var(--tx-3)}
+
+/* ---------- table -------------------------------------------------------- */
+.tablewrap{overflow-x:auto}
+table.t{width:100%;border-collapse:collapse;font-size:13px}
+table.t th{
+  text-align:left;font-weight:600;font-size:11.5px;color:var(--tx-2);
+  padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap;
+  background:var(--surface-2);position:sticky;top:0;
+}
+table.t td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.t tbody tr:last-child td{border-bottom:0}
+table.t tbody tr:hover{background:var(--surface-2)}
+table.t .num{text-align:right;font-variant-numeric:tabular-nums}
+table.t .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--tx-2)}
+.t__main{font-weight:600}
+.t__sub{font-size:11.5px;color:var(--tx-3)}
+
+/* ---------- tags --------------------------------------------------------- */
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;
+  padding:2px 9px;border-radius:999px;background:var(--idle-bg);color:var(--idle);white-space:nowrap}
+.tag--ok{background:var(--ok-bg);color:var(--ok)}
+.tag--warn{background:var(--warn-bg);color:var(--warn)}
+.tag--bad{background:var(--bad-bg);color:var(--bad)}
+.tag--ic{background:var(--ic-soft);color:var(--ic-deep)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+
+/* ---------- controls ----------------------------------------------------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:34px;
+  padding:0 14px;border-radius:8px;font-size:13px;font-weight:600;
+  background:var(--ic);color:#fff;border:1px solid var(--ic)}
+.btn:hover{background:var(--ic-deep);border-color:var(--ic-deep)}
+.btn--ghost{background:var(--surface);color:var(--tx);border-color:var(--line-2)}
+.btn--ghost:hover{background:var(--surface-2);border-color:var(--tx-3)}
+.btn--sm{height:28px;padding:0 10px;font-size:12px}
+.btn--link{background:none;border:0;color:var(--ic);padding:0;height:auto;font-weight:600}
+.btn[disabled]{opacity:.45;pointer-events:none}
+
+.field{height:34px;padding:0 11px;border:1px solid var(--line-2);border-radius:8px;
+  background:var(--surface);min-width:0}
+.field:focus{outline:none;border-color:var(--ic);box-shadow:0 0 0 3px var(--ic-ring)}
+select.field{padding-right:26px}
+.search{position:relative;display:flex;align-items:center}
+.search svg{position:absolute;left:10px;color:var(--tx-3);width:15px;height:15px}
+.search .field{padding-left:31px;width:230px}
+
+.segs{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:8px;padding:2px;gap:2px}
+.segs button{height:28px;padding:0 13px;border-radius:6px;font-size:12.5px;
+  font-weight:600;color:var(--tx-2)}
+.segs button.is-active{background:var(--surface);color:var(--tx);box-shadow:var(--shadow)}
+
+/* ---------- misc --------------------------------------------------------- */
+.row-actions{display:flex;gap:6px;justify-content:flex-end}
+.empty{padding:52px 20px;text-align:center;color:var(--tx-3)}
+.empty svg{width:34px;height:34px;opacity:.45;margin-bottom:9px}
+.muted{color:var(--tx-2)}
+.tiny{font-size:11.5px;color:var(--tx-3);line-height:1.6}
+.spread{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.hr{height:1px;background:var(--line);margin:14px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:1100px){.grid2{grid-template-columns:1fr}}
+
+/* meter bar used for utilisation / battery */
+.meter{height:6px;border-radius:3px;background:var(--line);overflow:hidden;min-width:60px}
+.meter i{display:block;height:100%;background:var(--ic);border-radius:3px}
+.meter--ok i{background:var(--ok)} .meter--warn i{background:var(--warn)}
+.meter--bad i{background:var(--bad)}
+
+/* 7-day bars on the dashboard */
+.bars{display:flex;align-items:flex-end;gap:8px;height:120px}
+.bars div{flex:1;background:linear-gradient(180deg,var(--ic),#9FD9EA);border-radius:4px 4px 0 0;min-height:3px}
+.bars-x{display:flex;gap:8px;margin-top:6px}
+.bars-x span{flex:1;text-align:center;font-size:10.5px;color:var(--tx-3)}
+
+/* ---------- modal -------------------------------------------------------- */
+.scrim{position:fixed;inset:0;background:rgba(13,27,38,.42);z-index:50;
+  display:grid;place-items:center;padding:24px;animation:fade .15s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{background:var(--surface);border-radius:var(--r-lg);box-shadow:0 20px 60px rgba(0,0,0,.25);
+  width:min(560px,100%);max-height:86vh;overflow-y:auto;animation:pop .16s}
+@keyframes pop{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+.modal__head{padding:15px 18px;border-bottom:1px solid var(--line);font-weight:700}
+.modal__body{padding:18px}
+.modal__foot{padding:13px 18px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}
+.kv{display:flex;justify-content:space-between;gap:14px;padding:8px 0;font-size:13px}
+.kv + .kv{border-top:1px solid var(--line)}
+.kv span{color:var(--tx-2)}
+.kv b{font-variant-numeric:tabular-nums}
+
+/* ---------- toast -------------------------------------------------------- */
+.toast{position:fixed;right:22px;bottom:22px;background:#0C1C27;color:#fff;
+  padding:11px 16px;border-radius:10px;font-size:13px;font-weight:600;z-index:80;
+  box-shadow:0 12px 32px rgba(0,0,0,.28);animation:pop .16s}
+
+/* ---------- login -------------------------------------------------------- */
+.login{min-height:100vh;display:grid;place-items:center;padding:24px;
+  background:radial-gradient(1000px 520px at 50% -10%,#DCEFF7,var(--bg))}
+.login__card{width:min(380px,100%);background:var(--surface);border:1px solid var(--line);
+  border-radius:16px;padding:28px;box-shadow:var(--shadow)}
+.login__brand{display:flex;align-items:center;gap:9px;justify-content:center;margin-bottom:5px}
+.login__brand svg{width:26px;height:26px;color:var(--ic)}
+.login__brand b{font-size:21px;font-weight:800;letter-spacing:-.02em}
+.login__brand b em{font-style:normal;color:var(--ic)}
+.login .field{width:100%;height:40px}
+.login .btn{width:100%;height:40px}
+
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+/* ==== src/lib/config.js ==== */
+/* ==========================================================================
+   config.js — 後台設定
+
+   同一條規則沿用自 H5 前台：這裡只放對外或營運層面的數字。
+   採購成本、毛利率、財務模型等內部數據一律不寫入前端程式碼——
+   打包後的 JS 是可讀的，即使是後台亦應假設終有一日會外洩。
+   ========================================================================== */
+window.IC = window.IC || {};
+
+IC.config = {
+  brand: {
+    name: 'Instantcool',
+    entity: 'Instantcool Technology Limited',
+    console: '營運後台'
+  },
+
+  /* 與前台 config.js 相同的收費設定。生產環境應由同一個後端供應， */
+  /* 避免兩套系統各自維護一份而出現分歧。                              */
+  pricing: {
+    currency: 'HKD',
+    ratePerHour: 8.00,
+    promoRatePerHour: 6.00,
+    billingBlockMinutes: 30,
+    preAuthDeposit: 100.00
+  },
+
+  venue: {
+    sharePct: 0.35,
+    settlementDay: 10          // 每月 10 號結算上月分成
+  },
+
+  retail: {
+    listPrice: 268.00,
+    memberPrice: 228.00
+  },
+
+  hardware: {
+    cabinetSlots: 8,
+    fanBatteryMah: 5000,
+    uvDisinfectSeconds: 90,
+    lowBatteryPct: 30,         // 低於此電量即列為需補電
+    offlineAfterMinutes: 5     // 心跳中斷超過此時間即視為離線
+  },
+
+  runtime: {
+    apiMode: 'mock',           // 'mock' | 'live'
+    apiBaseUrl: '/api/admin/v1',
+    demoData: true
+  }
+};
+
+/* ==== src/lib/util.js ==== */
+/* util.js — 格式化、DOM、雜項。無外部依賴。 */
+window.IC = window.IC || {};
+
+IC.util = {
+  el: function (s, r) { return (r || document).querySelector(s); },
+  els: function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); },
+
+  /** 所有進入 innerHTML 的外部字串都必須先經過這裡。 */
+  esc: function (s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  },
+
+  on: function (root, sel, fn, evt) {
+    root.addEventListener(evt || 'click', function (e) {
+      var t = e.target.closest(sel);
+      if (t && root.contains(t)) fn(e, t);
+    });
+  },
+
+  money: function (n, symbol) {
+    var v = Math.abs(Number(n) || 0);
+    var s = v.toLocaleString('en-HK', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return (Number(n) < 0 ? '−' : '') + (symbol === false ? '' : 'HK$') + s;
+  },
+
+  money0: function (n) {
+    return 'HK$' + Math.round(Number(n) || 0).toLocaleString('en-HK');
+  },
+
+  num: function (n) { return (Number(n) || 0).toLocaleString('en-HK'); },
+
+  pct: function (n, digits) { return (Number(n) * 100).toFixed(digits == null ? 0 : digits) + '%'; },
+
+  /** "2026-09-17 14:32" */
+  stamp: function (ts) {
+    var d = new Date(ts), p = function (x) { return x < 10 ? '0' + x : String(x); };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) +
+           ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  },
+
+  date: function (ts) { return IC.util.stamp(ts).slice(0, 10); },
+
+  /** 「3 分鐘前」「2 小時前」——機櫃心跳這類欄位用相對時間好讀得多。 */
+  ago: function (ts) {
+    var s = Math.max(0, (Date.now() - ts) / 1000);
+    if (s < 60) return Math.floor(s) + ' 秒前';
+    if (s < 3600) return Math.floor(s / 60) + ' 分鐘前';
+    if (s < 86400) return Math.floor(s / 3600) + ' 小時前';
+    return Math.floor(s / 86400) + ' 日前';
+  },
+
+  duration: function (mins) {
+    var h = Math.floor(mins / 60), m = Math.round(mins % 60);
+    return (h ? h + ' 小時 ' : '') + m + ' 分鐘';
+  },
+
+  id: function (p) {
+    return (p || 'id') + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  },
+
+  delay: function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); },
+
+  toCsv: function (rows) {
+    return rows.map(function (r) {
+      return r.map(function (c) {
+        var v = String(c == null ? '' : c);
+        return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+      }).join(',');
+    }).join('\r\n');
+  },
+
+  /**
+   * 能否真的觸發下載。
+   * 嵌入式預覽（把這個檔案放進 iframe 的展示頁）會封鎖由頁面發起的下載，
+   * 而且是靜默失敗——撳咗冇反應最難查。偵測到就改為把 CSV 直接顯示出來
+   * 讓人複製，至少不會甚麼都沒發生。
+   */
+  canDownload: function () {
+    try { return window.self === window.top; } catch (e) { return false; }
+  },
+
+  /** 匯出 CSV。BOM 是為了 Excel 正確辨識 UTF-8 中文。回傳是否真的下載了。 */
+  downloadCsv: function (filename, rows) {
+    var csv = IC.util.toCsv(rows);
+
+    if (!IC.util.canDownload()) { IC.util.showCsv(filename, csv); return false; }
+
+    var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+    return true;
+  },
+
+  /** 下載被封鎖時的後備：直接顯示 CSV 內容供複製。 */
+  showCsv: function (filename, csv) {
+    var scrim = document.createElement('div');
+    scrim.className = 'scrim';
+    scrim.innerHTML =
+      '<div class="modal" role="dialog" aria-modal="true">' +
+        '<div class="modal__head">匯出 CSV</div>' +
+        '<div class="modal__body">' +
+          '<p class="tiny" style="margin:0 0 10px">' +
+            '此預覽環境不容許直接下載檔案。以下為 ' + IC.util.esc(filename) +
+            ' 的內容，可全選複製後貼上 Excel。在本機或正式伺服器執行時會直接下載。</p>' +
+          '<textarea class="field" readonly style="width:100%;height:220px;padding:10px;' +
+            'font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.5">' +
+            IC.util.esc(csv) + '</textarea>' +
+        '</div>' +
+        '<div class="modal__foot">' +
+          '<button class="btn btn--ghost" data-x="close">關閉</button>' +
+          '<button class="btn" data-x="copy">複製全部</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(scrim);
+    var ta = scrim.querySelector('textarea');
+    scrim.addEventListener('click', function (e) {
+      if (e.target === scrim || e.target.closest('[data-x="close"]')) return scrim.remove();
+      if (e.target.closest('[data-x="copy"]')) {
+        ta.select();
+        var done = function () { IC.toast('已複製 CSV 內容'); };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(csv).then(done, done);
+        } else { try { document.execCommand('copy'); } catch (x) {} done(); }
+      }
+    });
+  }
+};
+
+/* ==== src/lib/revenue.js ==== */
+/* ==========================================================================
+   revenue.js — 「甚麼算收入」只在這裡定義一次。
+
+   概覽頁與收益報表本來各自判斷，結果同一天的租借收入出現兩個數字。
+   任何一張報表只要自行寫一次篩選條件，這種分歧就會再出現，所以規則集中在此。
+
+   已確認收入 = 已完成的訂單。租借中及逾期的訂單尚未請款，不計入；
+   已退款的訂單不計入。
+   ========================================================================== */
+window.IC = window.IC || {};
+
+IC.revenue = {
+  /** 已確認的租借訂單。 */
+  rentalsRecognised: function (orders) {
+    return (orders || []).filter(function (o) { return o.status === 'completed'; });
+  },
+
+  /** 已確認的零售訂單：備貨中及已寄出都已收款，只有退款不算。 */
+  retailRecognised: function (rows) {
+    return (rows || []).filter(function (r) { return r.status !== 'refunded'; });
+  },
+
+  sum: function (rows) {
+    return (rows || []).reduce(function (s, r) { return s + (r.amount || 0); }, 0);
+  },
+
+  /** 場地應計分成：按該場地自己的分成比率，逐張訂單計算。 */
+  venueAccrual: function (orders, venues) {
+    var byName = {};
+    (venues || []).forEach(function (v) { byName[v.name] = v.sharePct; });
+    return IC.revenue.rentalsRecognised(orders).reduce(function (s, o) {
+      var pct = byName[o.venueName] != null ? byName[o.venueName] : IC.config.venue.sharePct;
+      return s + o.amount * pct;
+    }, 0);
+  }
+};
+
+/* ==== src/lib/store.js ==== */
+/* store.js — 極簡狀態容器。登入狀態會存 localStorage，重新整理不會登出。 */
+window.IC = window.IC || {};
+
+IC.store = (function () {
+  var KEY = 'ic.admin.v1';
+  var subs = [];
+  var state = { signedIn: false, user: null, todo: null };
+
+  try {
+    var saved = JSON.parse(localStorage.getItem(KEY) || '{}');
+    state.signedIn = !!saved.signedIn;
+  } catch (e) { /* 私隱模式：改為只存記憶體 */ }
+
+  function persist() {
+    try { localStorage.setItem(KEY, JSON.stringify({ signedIn: state.signedIn })); } catch (e) {}
+  }
+
+  return {
+    get: function () { return state; },
+    set: function (patch) {
+      Object.assign(state, patch); persist();
+      subs.forEach(function (f) { f(state); });
+    },
+    subscribe: function (f) { subs.push(f); },
+    reset: function () { state.signedIn = false; state.user = null; persist(); }
+  };
+})();
+
+/* ==== src/lib/router.js ==== */
+/* ==========================================================================
+   router.js — hash router。路由自行註冊到 IC.routes。
+   route = { title, crumb?, render(params), mount?(root, params), unmount?(),
+             nav?: '<nav key>', guard?: 'auth' }
+   ========================================================================== */
+window.IC = window.IC || {};
+IC.routes = IC.routes || {};
+
+IC.router = (function () {
+  var mountEl = null, current = null, name = null;
+
+  function parse() {
+    var h = (location.hash || '#/dashboard').replace(/^#\/?/, '');
+    var parts = h.split('?');
+    var seg = (parts[0] || 'dashboard').split('/');
+    var params = {};
+    (parts[1] || '').split('&').forEach(function (kv) {
+      if (!kv) return;
+      var p = kv.split('=');
+      params[decodeURIComponent(p[0])] = decodeURIComponent(p[1] || '');
+    });
+    if (seg.length > 1) params.id = seg.slice(1).join('/');
+    return { name: seg[0], params: params, raw: h };
+  }
+
+  function render() {
+    var r = parse();
+    var route = IC.routes[r.name] || IC.routes.dashboard;
+
+    if (route.guard === 'auth' && !IC.store.get().signedIn) {
+      location.hash = '#/login?next=' + encodeURIComponent(r.raw);
+      return;
+    }
+    // 已登入就不應再看到登入頁
+    if (r.name === 'login' && IC.store.get().signedIn) {
+      location.hash = '#/dashboard';
+      return;
+    }
+
+    if (current && current.unmount) { try { current.unmount(); } catch (e) {} }
+
+    var isLogin = r.name === 'login';
+    document.body.classList.toggle('is-login', isLogin);
+    IC.shell.toggle(!isLogin);
+
+    var host = isLogin ? document.getElementById('root') : document.getElementById('page');
+    if (isLogin) {
+      document.getElementById('root').innerHTML = '';
+      var wrap = document.createElement('div');
+      wrap.innerHTML = route.render(r.params);
+      host.appendChild(wrap);
+      current = route; name = r.name;
+      if (route.mount) route.mount(wrap, r.params);
+      return;
+    }
+
+    IC.shell.ensure();
+    host = document.getElementById('page');
+    host.innerHTML = route.render(r.params);
+    IC.shell.setTitle(route.title, route.crumb);
+    IC.shell.setActive(route.nav || r.name);
+    current = route; name = r.name;
+    if (route.mount) route.mount(host, r.params);
+    host.scrollTop = 0;
+    window.scrollTo(0, 0);
+  }
+
+  return {
+    start: function (el) {
+      mountEl = el;
+      window.addEventListener('hashchange', render);
+      render();
+    },
+    go: function (p) { location.hash = '#/' + String(p).replace(/^#?\/*/, ''); },
+    refresh: render,
+    get current() { return name; }
+  };
+})();
+
+/* ==== src/api/fixtures.js ==== */
+/* ==========================================================================
+   fixtures.js — 示範資料
+
+   全部為模擬數據。截至目前 Instantcool 未有已簽約場地及實際營運紀錄，
+   這裡的機櫃、訂單及分成只為讓後台介面跑得通。
+   接上真實後端時，把 IC.config.runtime.apiMode 改為 'live' 即可。
+   ========================================================================== */
+window.IC = window.IC || {};
+
+(function () {
+  var now = Date.now(), DAY = 86400000, MIN = 60000;
+  function pick(a, i) { return a[i % a.length]; }
+
+  /* ---- 場地夥伴 ---- */
+  var venues = [
+    { id:'V001', name:'觀塘 裕民坊小巴總站', district:'觀塘', contact:'陳經理', phone:'9123 4567',
+      status:'active', sharePct:0.35, signedAt:now-DAY*62, cabinets:3 },
+    { id:'V002', name:'觀塘 apm 創紀之城', district:'觀塘', contact:'李主任', phone:'9234 5678',
+      status:'active', sharePct:0.35, signedAt:now-DAY*45, cabinets:2 },
+    { id:'V003', name:'尖沙咀 天星碼頭', district:'油尖旺', contact:'黃先生', phone:'9345 6789',
+      status:'pending', sharePct:0.35, signedAt:null, cabinets:0 },
+    { id:'V004', name:'銅鑼灣 維多利亞公園', district:'灣仔', contact:'康文署 周女士', phone:'2890 1234',
+      status:'negotiating', sharePct:0.30, signedAt:null, cabinets:0 },
+    { id:'V005', name:'沙田 新城市廣場', district:'沙田', contact:'鄭經理', phone:'9456 7890',
+      status:'active', sharePct:0.35, signedAt:now-DAY*20, cabinets:1 }
+  ];
+
+  /* ---- 機櫃 ---- */
+  var cabStates = ['online','online','online','offline','fault','unplaced'];
+  var cabinets = [];
+  for (var i = 0; i < 14; i++) {
+    var v = venues[i % 3 === 0 ? 0 : (i % 3 === 1 ? 1 : 4)];
+    var st = pick(cabStates, i);
+    var slots = IC.config.hardware.cabinetSlots;
+    var fans = st === 'online' ? 2 + (i * 3) % 7 : (st === 'offline' ? 1 + i % 4 : 0);
+    cabinets.push({
+      id: 'IC-C' + String(101 + i),
+      code: String(884200 + i),
+      venueId: st === 'unplaced' ? null : v.id,
+      venueName: st === 'unplaced' ? null : v.name,
+      status: st,
+      slots: slots,
+      fans: Math.min(fans, slots),
+      freeSlots: Math.max(0, slots - Math.min(fans, slots)),
+      firmware: '1.4.' + (2 + i % 3),
+      rssi: -52 - (i * 3) % 30,
+      lastSeen: st === 'online' ? now - (i % 4) * MIN : now - (40 + i * 17) * MIN,
+      rentalsToday: st === 'online' ? 3 + (i * 2) % 6 : 0,
+      installedAt: now - DAY * (10 + i * 3)
+    });
+  }
+
+  /* ---- 風扇 ---- */
+  var fanStates = ['available','rented','disinfecting','available','charging','maintenance','lost'];
+  var fans = [];
+  for (var j = 0; j < 28; j++) {
+    var c = cabinets[j % cabinets.length];
+    var fs = pick(fanStates, j);
+    fans.push({
+      id: 'FAN-' + String(4100 + j),
+      cabinetId: fs === 'rented' ? null : c.id,
+      cabinetCode: fs === 'rented' ? null : c.code,
+      status: fs,
+      battery: fs === 'charging' ? 20 + (j * 7) % 40 : 45 + (j * 11) % 55,
+      cycles: 40 + (j * 13) % 260,
+      lastUsedAt: now - (j * 137) * MIN,
+      health: j % 9 === 0 ? 'degraded' : 'good'
+    });
+  }
+
+  /* ---- 訂單 ---- */
+  var orders = [];
+  for (var k = 0; k < 26; k++) {
+    var oc = cabinets[k % cabinets.length];
+    var mins = 18 + (k * 23) % 170;
+    var promo = k % 3 === 0;
+    var rate = promo ? IC.config.pricing.promoRatePerHour : IC.config.pricing.ratePerHour;
+    var blocks = Math.ceil(mins / IC.config.pricing.billingBlockMinutes);
+    var amount = Math.min(blocks * rate * 0.5, IC.config.pricing.preAuthDeposit);
+    orders.push({
+      id: 'R' + String(2609170000 + k),
+      type: 'rental',
+      userId: 'U' + String(100200 + (k * 7) % 90),
+      mobile: '+852 6' + String(1000000 + (k * 137) % 8999999).slice(0, 7),
+      cabinetId: oc.id,
+      venueName: oc.venueName || '—',
+      startedAt: now - (k * 5.5) * 3600000,
+      minutes: mins,
+      promo: promo,
+      amount: amount,
+      status: k === 0 ? 'active' : (k % 11 === 0 ? 'overdue' : (k % 13 === 0 ? 'refunded' : 'completed'))
+    });
+  }
+
+  /* ---- 零售訂單 ---- */
+  var retail = [];
+  var fulfil = ['cabinet','sfExpress'];
+  for (var m = 0; m < 9; m++) {
+    var qty = 1 + m % 2;
+    var unit = m % 3 === 0 ? IC.config.retail.memberPrice : IC.config.retail.listPrice;
+    var ship = fulfil[m % 2] === 'sfExpress' ? 30 : 0;
+    retail.push({
+      id: 'P' + String(2609170000 + m),
+      type: 'retail',
+      userId: 'U' + String(100200 + (m * 11) % 90),
+      qty: qty,
+      fulfilment: fulfil[m % 2],
+      amount: unit * qty + ship,
+      createdAt: now - (m * 19) * 3600000,
+      status: m === 0 ? 'preparing' : (m === 1 ? 'shipped' : (m % 7 === 0 ? 'refunded' : 'completed'))
+    });
+  }
+
+  /* ---- 用戶 ---- */
+  var users = [];
+  for (var u = 0; u < 18; u++) {
+    users.push({
+      id: 'U' + String(100200 + u * 5),
+      mobile: '+852 6' + String(1000000 + (u * 911) % 8999999).slice(0, 7),
+      joinedAt: now - DAY * (3 + u * 6),
+      rentals: (u * 3) % 17,
+      spend: ((u * 37) % 240) + 6,
+      status: u % 9 === 0 ? 'blocked' : 'active',
+      lastActiveAt: now - (u * 9) * 3600000
+    });
+  }
+
+  /* ---- 提現申請 ---- */
+  var withdrawals = [
+    { id:'W2609001', venueId:'V001', venueName:'觀塘 裕民坊小巴總站', amount:1842.50,
+      period:'2026-08', requestedAt:now-DAY*2, status:'pending' },
+    { id:'W2609002', venueId:'V002', venueName:'觀塘 apm 創紀之城', amount:1263.20,
+      period:'2026-08', requestedAt:now-DAY*3, status:'pending' },
+    { id:'W2608014', venueId:'V001', venueName:'觀塘 裕民坊小巴總站', amount:1590.10,
+      period:'2026-07', requestedAt:now-DAY*33, status:'paid' },
+    { id:'W2608015', venueId:'V005', venueName:'沙田 新城市廣場', amount:612.80,
+      period:'2026-07', requestedAt:now-DAY*33, status:'paid' }
+  ];
+
+  /* ---- 消毒記錄（Instantcool 獨有，Yellowpal 沒有對應功能） ---- */
+  var hygiene = [];
+  for (var h = 0; h < 16; h++) {
+    var hc = cabinets[h % cabinets.length];
+    var failed = h % 12 === 0;
+    hygiene.push({
+      id: 'UV' + String(90210 + h),
+      cabinetId: hc.id,
+      slot: 1 + h % IC.config.hardware.cabinetSlots,
+      fanId: 'FAN-' + String(4100 + (h * 3) % 28),
+      startedAt: now - (h * 47) * MIN,
+      durationS: failed ? 12 : IC.config.hardware.uvDisinfectSeconds,
+      result: failed ? 'aborted' : 'ok'
+    });
+  }
+
+  /* ---- 每日租借次數（過去 7 日，全機隊合計） ---- */
+  var daily = [38, 44, 51, 41, 63, 71, 58];
+
+  /* ---- 公告 ---- */
+  var news = [
+    { id:'N3', title:'九月份場地分成將於 10 月 10 日結算', at: now-DAY*1 },
+    { id:'N2', title:'新增消毒記錄匯出功能，可按機櫃及日期篩選', at: now-DAY*4 },
+    { id:'N1', title:'系統維護通知：9 月 20 日 03:00–04:00 暫停服務', at: now-DAY*6 }
+  ];
+
+  IC.fixtures = {
+    venues: venues, cabinets: cabinets, fans: fans,
+    orders: orders, retail: retail, users: users,
+    withdrawals: withdrawals, hygiene: hygiene, daily: daily, news: news,
+    admin: { name:'徐先生', role:'系統管理員', email:'dylan@instant-cool.com' }
+  };
+})();
+
+/* ==== src/api/client.js ==== */
+/* ==========================================================================
+   client.js — 後台唯一資料出入口。
+
+   所有畫面只呼叫 IC.api，不自行 fetch。'mock' 模式由 fixtures 提供資料，
+   'live' 模式打同名端點（見 docs/API-SPEC.md）。切換時畫面程式碼不用改。
+   ========================================================================== */
+window.IC = window.IC || {};
+
+IC.api = (function () {
+  var mock = function () { return IC.config.runtime.apiMode === 'mock'; };
+  var db = null;
+  function seed() { if (!db) db = JSON.parse(JSON.stringify(IC.fixtures)); return db; }
+
+  function request(method, path, body) {
+    return fetch(IC.config.runtime.apiBaseUrl + path, {
+      method: method,
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: body ? JSON.stringify(body) : undefined
+    }).then(function (r) {
+      if (!r.ok) throw Object.assign(new Error('HTTP ' + r.status), { status: r.status });
+      return r.status === 204 ? null : r.json();
+    });
+  }
+
+  function list(key, path) {
+    return function () {
+      if (mock()) return IC.util.delay(160).then(function () { return seed()[key]; });
+      return request('GET', path);
+    };
+  }
+
+  var api = {
+    get: function (p) { return request('GET', p); },
+    post: function (p, b) { return request('POST', p, b); },
+
+    signIn: function (email, password) {
+      if (mock()) {
+        return IC.util.delay(600).then(function () {
+          if (!email || !password) throw new Error('invalid_credentials');
+          return seed().admin;
+        });
+      }
+      return request('POST', '/auth/login', { email: email, password: password });
+    },
+
+    cabinets:    list('cabinets', '/cabinets'),
+    fans:        list('fans', '/fans'),
+    venues:      list('venues', '/venues'),
+    users:       list('users', '/users'),
+    orders:      list('orders', '/orders?type=rental'),
+    retail:      list('retail', '/orders?type=retail'),
+    withdrawals: list('withdrawals', '/withdrawals'),
+    hygiene:     list('hygiene', '/hygiene-logs'),
+    news:        list('news', '/announcements'),
+
+    /** 概覽頁一次過取得所有統計，避免首頁打十個端點。 */
+    overview: function () {
+      if (mock()) {
+        return IC.util.delay(240).then(function () {
+          var d = seed();
+          var online = d.cabinets.filter(function (c) { return c.status === 'online'; }).length;
+          var dayAgo = Date.now() - 86400000;
+          // 一律走 IC.revenue，避免這裡與收益報表各自判斷而對不上數。
+          var completed = IC.revenue.rentalsRecognised(d.orders);
+          var todayOrders = completed.filter(function (o) { return o.startedAt >= dayAgo; });
+          var rentalRev = IC.revenue.sum(completed);
+          var retailRev = IC.revenue.sum(IC.revenue.retailRecognised(d.retail));
+          return {
+            revenueTotal: rentalRev + retailRev,
+            revenueToday: IC.revenue.sum(todayOrders),
+            rentalRevenue: rentalRev,
+            retailRevenue: retailRev,
+            ordersTotal: d.orders.length + d.retail.length,
+            ordersToday: todayOrders.length,
+            cabinets: d.cabinets.length,
+            cabinetsOnline: online,
+            fans: d.fans.length,
+            fansAvailable: d.fans.filter(function (f) { return f.status === 'available'; }).length,
+            users: d.users.length,
+            venuesActive: d.venues.filter(function (v) { return v.status === 'active'; }).length,
+            venuesPipeline: d.venues.filter(function (v) { return v.status !== 'active'; }).length,
+            // 待批核的提現申請金額（與收益報表的「本期應計分成」是兩回事）
+            pendingWithdrawals: d.withdrawals.filter(function (w) { return w.status === 'pending'; })
+                              .reduce(function (s, w) { return s + w.amount; }, 0),
+            daily: d.daily,
+            todo: api.todoCounts()
+          };
+        });
+      }
+      return request('GET', '/overview');
+    },
+
+    /** 待辦：需要人手處理的項目。導覽列的紅點也讀這裡。 */
+    todoCounts: function () {
+      var d = seed();
+      return {
+        offline:    d.cabinets.filter(function (c) { return c.status === 'offline'; }).length,
+        fault:      d.cabinets.filter(function (c) { return c.status === 'fault'; }).length,
+        unplaced:   d.cabinets.filter(function (c) { return c.status === 'unplaced'; }).length,
+        lowBattery: d.fans.filter(function (f) {
+                      return f.battery < IC.config.hardware.lowBatteryPct && f.status !== 'rented';
+                    }).length,
+        lostFans:   d.fans.filter(function (f) { return f.status === 'lost'; }).length,
+        overdue:    d.orders.filter(function (o) { return o.status === 'overdue'; }).length,
+        withdrawals:d.withdrawals.filter(function (w) { return w.status === 'pending'; }).length,
+        uvFailed:   d.hygiene.filter(function (h) { return h.result === 'aborted'; }).length,
+        venuesPending: d.venues.filter(function (v) { return v.status !== 'active'; }).length
+      };
+    },
+
+    /** 批核提現。真實環境必須是後端動作並留審計紀錄。 */
+    approveWithdrawal: function (id) {
+      if (mock()) {
+        return IC.util.delay(500).then(function () {
+          var w = seed().withdrawals.filter(function (x) { return x.id === id; })[0];
+          if (w) { w.status = 'paid'; w.paidAt = Date.now(); }
+          return w;
+        });
+      }
+      return request('POST', '/withdrawals/' + encodeURIComponent(id) + '/approve');
+    },
+
+    /** 遠端指令：重啟機櫃 / 開櫃門。這些都是有後果的動作，UI 必須先確認。 */
+    cabinetCommand: function (id, command) {
+      if (mock()) return IC.util.delay(700).then(function () { return { id: id, command: command, ok: true }; });
+      return request('POST', '/cabinets/' + encodeURIComponent(id) + '/commands', { command: command });
+    }
+  };
+
+  return api;
+})();
+
+/* ==== src/components/icons.js ==== */
+/* icons.js — 內嵌 SVG。IC.icon('name') 回傳字串。 */
+window.IC = window.IC || {};
+
+IC.icon = (function () {
+  var A = 'xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+          'stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"';
+  var set = {
+    grid:'<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>',
+    box:'<path d="M3.5 7.5 12 3.5l8.5 4v9L12 20.5l-8.5-4z"/><path d="M3.5 7.5 12 11.5l8.5-4M12 11.5v9"/>',
+    fan:'<circle cx="12" cy="12" r="2.2"/><path d="M12 9.8c0-3.4.9-5.8 3-5.8s3 2.4 1.2 4.6c-1.2 1.5-2.9 1.9-4.2 1.2M14.2 12c3.4 0 5.8.9 5.8 3s-2.4 3-4.6 1.2c-1.5-1.2-1.9-2.9-1.2-4.2M12 14.2c0 3.4-.9 5.8-3 5.8s-3-2.4-1.2-4.6c1.2-1.5 2.9-1.9 4.2-1.2M9.8 12c-3.4 0-5.8-.9-5.8-3s2.4-3 4.6-1.2c1.5 1.2 1.9 2.9 1.2 4.2"/>',
+    receipt:'<path d="M6 3.5h12v17l-2.4-1.6-2.4 1.6-2.4-1.6L8.4 20.5 6 18.9z"/><path d="M9 8h6M9 12h6"/>',
+    cart:'<circle cx="9.5" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/><path d="M3 4h2.2l2.3 11h10.1l1.9-8H6.2"/>',
+    users:'<circle cx="9" cy="8.5" r="3.2"/><path d="M3 19.5a6 6 0 0 1 12 0"/><path d="M16 5.6a3.2 3.2 0 0 1 0 6M17.5 14.2A6 6 0 0 1 21 19.5"/>',
+    store:'<path d="M4 9.5V20h16V9.5"/><path d="M3 4.5h18l1 5H2z"/><path d="M9.5 20v-5.5h5V20"/>',
+    coins:'<ellipse cx="12" cy="6.5" rx="7.5" ry="3"/><path d="M4.5 6.5v5c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-5"/><path d="M4.5 11.5v5c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-5"/>',
+    bank:'<path d="M3.5 9.5 12 4.5l8.5 5"/><path d="M5.5 9.5v8M9.5 9.5v8M14.5 9.5v8M18.5 9.5v8"/><path d="M3 20.5h18"/>',
+    shield:'<path d="M12 3.2 19 6v5.6c0 4.3-2.9 7.6-7 9.2-4.1-1.6-7-4.9-7-9.2V6z"/><path d="m9 12 2.2 2.2L15.4 10"/>',
+    gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 14.5a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1v.3a2 2 0 1 1-4 0v-.2a1.6 1.6 0 0 0-2.8-1.1l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-1.1-2.7H3.4a2 2 0 1 1 0-4h.2a1.6 1.6 0 0 0 1.1-2.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 2.7-1.1V3.4a2 2 0 1 1 4 0v.2a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0 1.1 2.7h.3a2 2 0 1 1 0 4h-.2a1.6 1.6 0 0 0-1.5 1.1z"/>',
+    search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/>',
+    warn:'<path d="M12 4.5 21 19.5H3z"/><path d="M12 10v4"/><circle cx="12" cy="16.8" r=".9" fill="currentColor" stroke="none"/>',
+    check:'<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+    download:'<path d="M12 4v11"/><path d="m7.5 11 4.5 4.5 4.5-4.5"/><path d="M4.5 19.5h15"/>',
+    power:'<path d="M12 3.5v8"/><path d="M6.8 6.9a8 8 0 1 0 10.4 0"/>',
+    bell:'<path d="M18 9a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16S18 14 18 9z"/><path d="M10.3 19.5a2 2 0 0 0 3.4 0"/>',
+    logout:'<path d="M14 20H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h8"/><path d="m17 15 3-3-3-3M20 12H10"/>',
+    clock:'<circle cx="12" cy="12" r="8.6"/><path d="M12 7.2V12l3 1.8"/>',
+    pin:'<path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/>',
+    battery:'<rect x="2.5" y="7.5" width="16" height="9" rx="2"/><path d="M21 10.5v3"/>',
+    refresh:'<path d="M20 11a8 8 0 1 0-.7 4.5"/><path d="M20 4.5V11h-6.5"/>',
+    eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/>'
+  };
+  return function (n) { return set[n] ? '<svg ' + A + '>' + set[n] + '</svg>' : ''; };
+})();
+
+/* ==== src/components/ui.js ==== */
+/* ui.js — toast、modal、tag、meter 等共用零件。 */
+window.IC = window.IC || {};
+
+IC.toast = function (msg, ms) {
+  var old = document.querySelector('.toast');
+  if (old) old.remove();
+  var t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function () { t.remove(); }, ms || 2400);
+};
+
+/** 確認框。有後果的動作（批核、遠端開櫃）必須先經過這裡。 */
+IC.confirm = function (o) {
+  return new Promise(function (resolve) {
+    var scrim = document.createElement('div');
+    scrim.className = 'scrim';
+    scrim.innerHTML =
+      '<div class="modal" role="dialog" aria-modal="true">' +
+        '<div class="modal__head">' + IC.util.esc(o.title) + '</div>' +
+        '<div class="modal__body">' + (o.bodyHtml || '<p class="muted" style="margin:0">' +
+          IC.util.esc(o.body || '') + '</p>') + '</div>' +
+        '<div class="modal__foot">' +
+          '<button class="btn btn--ghost" data-x="no">' + IC.util.esc(o.cancel || '取消') + '</button>' +
+          '<button class="btn" data-x="yes">' + IC.util.esc(o.confirm || '確定') + '</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(scrim);
+    function close(v) { scrim.remove(); document.removeEventListener('keydown', esc); resolve(v); }
+    function esc(e) { if (e.key === 'Escape') close(false); }
+    document.addEventListener('keydown', esc);
+    scrim.addEventListener('click', function (e) {
+      if (e.target === scrim) return close(false);
+      var b = e.target.closest('[data-x]');
+      if (b) close(b.getAttribute('data-x') === 'yes');
+    });
+    scrim.querySelector('[data-x="yes"]').focus();
+  });
+};
+
+/** 詳情視窗（唯讀）。 */
+IC.detail = function (title, rows, extraHtml) {
+  var scrim = document.createElement('div');
+  scrim.className = 'scrim';
+  scrim.innerHTML =
+    '<div class="modal" role="dialog" aria-modal="true">' +
+      '<div class="modal__head">' + IC.util.esc(title) + '</div>' +
+      '<div class="modal__body">' +
+        rows.map(function (r) {
+          return '<div class="kv"><span>' + IC.util.esc(r[0]) + '</span><b>' + (r[2] ? r[1] : IC.util.esc(r[1])) + '</b></div>';
+        }).join('') + (extraHtml || '') +
+      '</div>' +
+      '<div class="modal__foot"><button class="btn btn--ghost" data-x="close">關閉</button></div>' +
+    '</div>';
+  document.body.appendChild(scrim);
+  scrim.addEventListener('click', function (e) {
+    if (e.target === scrim || e.target.closest('[data-x="close"]')) scrim.remove();
+  });
+};
+
+/* 狀態標籤：一處定義，全後台共用，避免同一個狀態在不同頁用不同字眼。 */
+IC.STATUS = {
+  cabinet: {
+    online:   { label:'在線',   cls:'ok'   },
+    offline:  { label:'離線',   cls:'bad'  },
+    fault:    { label:'故障',   cls:'warn' },
+    unplaced: { label:'未投放', cls:''     }
+  },
+  fan: {
+    available:    { label:'可借',   cls:'ok'   },
+    rented:       { label:'租借中', cls:'ic'   },
+    disinfecting: { label:'消毒中', cls:'ic'   },
+    charging:     { label:'充電中', cls:''     },
+    maintenance:  { label:'維修',   cls:'warn' },
+    lost:         { label:'遺失',   cls:'bad'  }
+  },
+  order: {
+    active:    { label:'租借中', cls:'ic'   },
+    completed: { label:'已完成', cls:'ok'   },
+    overdue:   { label:'逾期',   cls:'bad'  },
+    refunded:  { label:'已退款', cls:'warn' }
+  },
+  retail: {
+    preparing: { label:'備貨中', cls:'ic'   },
+    shipped:   { label:'已寄出', cls:'ic'   },
+    completed: { label:'已完成', cls:'ok'   },
+    refunded:  { label:'已退款', cls:'warn' }
+  },
+  venue: {
+    active:      { label:'營運中', cls:'ok'   },
+    pending:     { label:'待簽約', cls:'warn' },
+    negotiating: { label:'洽談中', cls:''     }
+  },
+  withdrawal: {
+    pending: { label:'待批核', cls:'warn' },
+    paid:    { label:'已支付', cls:'ok'   },
+    rejected:{ label:'已拒絕', cls:'bad'  }
+  },
+  user: {
+    active:  { label:'正常', cls:'ok'  },
+    blocked: { label:'已停用', cls:'bad' }
+  },
+  hygiene: {
+    ok:      { label:'完成',   cls:'ok'  },
+    aborted: { label:'中斷',   cls:'bad' }
+  }
+};
+
+IC.tag = function (kind, value) {
+  var s = (IC.STATUS[kind] || {})[value] || { label: value, cls: '' };
+  return '<span class="tag' + (s.cls ? ' tag--' + s.cls : '') + '">' +
+         '<i class="dot"></i>' + IC.util.esc(s.label) + '</span>';
+};
+
+IC.meter = function (pct, cls) {
+  var v = Math.max(0, Math.min(100, Math.round(pct)));
+  return '<span style="display:inline-flex;align-items:center;gap:8px">' +
+    '<span class="meter' + (cls ? ' meter--' + cls : '') + '"><i style="width:' + v + '%"></i></span>' +
+    '<span class="tiny" style="min-width:30px;text-align:right">' + v + '%</span></span>';
+};
+
+IC.batteryMeter = function (pct) {
+  return IC.meter(pct, pct < IC.config.hardware.lowBatteryPct ? 'bad' : (pct < 60 ? 'warn' : 'ok'));
+};
+
+/* ==== src/components/table.js ==== */
+/* ==========================================================================
+   table.js — 共用資料表。
+
+   每一張列表頁的需求都一樣：搜尋、篩選、排序、匯出 CSV。寫一次，
+   九張表共用，省下的不只是行數——而是九張表的行為保證一致。
+
+   用法：
+     IC.table(host, {
+       columns: [{ key, label, align?, width?, render?(row), sort?(a,b), csv?(row) }],
+       rows: [...],
+       searchKeys: ['id','name'],
+       filters: [{ key, label, options:[{v,label}], match(row, v) }],
+       empty: '未有資料',
+       onRow: function (row) {}          // 可選：點擊一列
+     })
+   ========================================================================== */
+window.IC = window.IC || {};
+
+IC.table = function (host, o) {
+  var state = { q: '', sort: null, dir: 1, filters: {}, page: 1, per: o.per || 12 };
+
+  function matches(r) {
+    if (state.q) {
+      var hay = (o.searchKeys || []).map(function (k) { return String(r[k] == null ? '' : r[k]); })
+                .join(' ').toLowerCase();
+      if (hay.indexOf(state.q.toLowerCase()) === -1) return false;
+    }
+    return (o.filters || []).every(function (f) {
+      var v = state.filters[f.key];
+      return !v || v === '__all' || f.match(r, v);
+    });
+  }
+
+  function sorted(rows) {
+    if (!state.sort) return rows;
+    var col = o.columns.filter(function (c) { return c.key === state.sort; })[0];
+    if (!col) return rows;
+    var cmp = col.sort || function (a, b) {
+      var x = a[col.key], y = b[col.key];
+      if (typeof x === 'number' && typeof y === 'number') return x - y;
+      return String(x).localeCompare(String(y), 'zh-HK');
+    };
+    return rows.slice().sort(function (a, b) { return cmp(a, b) * state.dir; });
+  }
+
+  function toolbar() {
+    return '<div class="panel__tools">' +
+      ((o.filters || []).map(function (f) {
+        return '<select class="field" data-f="' + IC.util.esc(f.key) + '">' +
+          '<option value="__all">' + IC.util.esc(f.label) + '：全部</option>' +
+          f.options.map(function (op) {
+            return '<option value="' + IC.util.esc(op.v) + '"' +
+              (state.filters[f.key] === op.v ? ' selected' : '') + '>' +
+              IC.util.esc(op.label) + '</option>';
+          }).join('') + '</select>';
+      }).join('')) +
+      (o.searchKeys ? '<span class="search">' + IC.icon('search') +
+        '<input class="field" data-q placeholder="搜尋…" value="' + IC.util.esc(state.q) + '"></span>' : '') +
+      '<button class="btn btn--ghost btn--sm" data-csv>' + IC.icon('download') + '匯出 CSV</button>' +
+      '</div>';
+  }
+
+  /* `view` is the filtered+sorted array currently on screen. Listeners are
+     bound once and read this variable, rather than closing over the array that
+     existed when they were attached — binding inside render() left every
+     previous render's handler alive, and a row click resolved against the
+     oldest one (so clicking a filtered row opened the wrong record). */
+  var view = [];
+  var bound = false;
+
+  function render() {
+    var all = (o.rows || []).filter(matches);
+    view = sorted(all);
+    var pages = Math.max(1, Math.ceil(view.length / state.per));
+    if (state.page > pages) state.page = pages;
+    var from = (state.page - 1) * state.per;
+    var slice = view.slice(from, from + state.per);
+
+    host.innerHTML =
+      '<div class="panel__head">' +
+        '<div class="panel__title">' + IC.util.esc(o.title || '') + '</div>' +
+        '<div class="panel__hint">' + all.length + ' 項' +
+          (all.length !== (o.rows || []).length ? '（共 ' + (o.rows || []).length + ' 項）' : '') +
+        '</div>' + toolbar() +
+      '</div>' +
+      (slice.length
+        ? '<div class="tablewrap"><table class="t"><thead><tr>' +
+            o.columns.map(function (c) {
+              var active = state.sort === c.key;
+              return '<th' + (c.align === 'right' ? ' class="num"' : '') +
+                (c.width ? ' style="width:' + c.width + '"' : '') + '>' +
+                '<button class="btn--link" data-sort="' + IC.util.esc(c.key) + '" ' +
+                  'style="font:inherit;color:inherit">' + IC.util.esc(c.label) +
+                  (active ? (state.dir > 0 ? ' \u2191' : ' \u2193') : '') + '</button></th>';
+            }).join('') + '</tr></thead><tbody>' +
+            slice.map(function (r, i) {
+              return '<tr data-i="' + (from + i) + '"' +
+                (o.onRow ? ' style="cursor:pointer"' : '') + '>' +
+                o.columns.map(function (c) {
+                  return '<td' + (c.align === 'right' ? ' class="num"' : '') + '>' +
+                    (c.render ? c.render(r) : IC.util.esc(r[c.key])) + '</td>';
+                }).join('') + '</tr>';
+            }).join('') +
+          '</tbody></table></div>' +
+          (pages > 1
+            ? '<div class="spread" style="padding:11px 16px;border-top:1px solid var(--line)">' +
+                '<span class="tiny">第 ' + state.page + ' / ' + pages + ' 頁</span>' +
+                '<span style="display:flex;gap:6px">' +
+                  '<button class="btn btn--ghost btn--sm" data-pg="-1"' +
+                    (state.page === 1 ? ' disabled' : '') + '>上一頁</button>' +
+                  '<button class="btn btn--ghost btn--sm" data-pg="1"' +
+                    (state.page === pages ? ' disabled' : '') + '>下一頁</button>' +
+                '</span></div>'
+            : '')
+        : '<div class="empty">' + IC.icon('search') + '<div>' +
+            IC.util.esc(o.empty || '未有符合條件的資料') + '</div></div>');
+
+    bindOnce();
+    if (state.focusSearch) {
+      var n = host.querySelector('[data-q]');
+      if (n) { n.focus(); n.setSelectionRange(n.value.length, n.value.length); }
+      state.focusSearch = false;
+    }
+  }
+
+  function bindOnce() {
+    if (bound) return;
+    bound = true;
+
+    host.addEventListener('input', function (e) {
+      if (!e.target.matches('[data-q]')) return;
+      state.q = e.target.value;
+      state.page = 1;
+      state.focusSearch = true;
+      render();
+    });
+
+    host.addEventListener('change', function (e) {
+      if (!e.target.matches('[data-f]')) return;
+      state.filters[e.target.getAttribute('data-f')] = e.target.value;
+      state.page = 1;
+      render();
+    });
+
+    IC.util.on(host, '[data-sort]', function (e, el) {
+      var k = el.getAttribute('data-sort');
+      if (state.sort === k) state.dir = -state.dir; else { state.sort = k; state.dir = 1; }
+      render();
+    });
+
+    IC.util.on(host, '[data-pg]', function (e, el) {
+      state.page += Number(el.getAttribute('data-pg'));
+      render();
+    });
+
+    IC.util.on(host, '[data-csv]', function () {
+      // csv: false 的欄位（例如「操作」按鈕）不匯出——空欄位在 Excel 只是雜訊。
+      var cols = o.columns.filter(function (c) { return c.csv !== false; });
+      var head = cols.map(function (c) { return c.label; });
+      var body = view.map(function (r) {
+        return cols.map(function (c) {
+          return c.csv ? c.csv(r) : (r[c.key] == null ? '' : r[c.key]);
+        });
+      });
+      var ok = IC.util.downloadCsv(
+        (o.csvName || 'export') + '_' + IC.util.date(Date.now()) + '.csv',
+        [head].concat(body));
+      if (ok) IC.toast('已匯出 ' + view.length + ' 項');
+    });
+
+    if (o.onRow) {
+      IC.util.on(host, 'tbody tr', function (e, tr) {
+        if (e.target.closest('button')) return;   // 列內按鈕有自己的處理
+        var row = view[Number(tr.getAttribute('data-i'))];
+        if (row) o.onRow(row);
+      });
+    }
+  }
+
+  render();
+  return { rerender: render, state: state };
+};
+
+/* ==== src/components/shell.js ==== */
+/* ==========================================================================
+   shell.js — 側邊導覽 + 頂欄。
+
+   導覽結構對應 Yellowpal 後台所管理的同一組實體（裝置、站點、訂單、用戶、
+   場地、子帳戶、提現），再加上 Instantcool 獨有的消毒記錄。
+   ========================================================================== */
+window.IC = window.IC || {};
+
+IC.nav = [
+  { group: null, items: [
+    { key:'dashboard', label:'概覽',     icon:'grid' }
+  ]},
+  { group: '營運', items: [
+    { key:'cabinets', label:'機櫃管理', icon:'box',    todo:['offline','fault','unplaced'] },
+    { key:'fans',     label:'風扇管理', icon:'fan',    todo:['lowBattery','lostFans'] },
+    { key:'hygiene',  label:'消毒記錄', icon:'shield', todo:['uvFailed'] }
+  ]},
+  { group: '訂單', items: [
+    { key:'orders', label:'租借訂單', icon:'receipt', todo:['overdue'] },
+    { key:'retail', label:'零售訂單', icon:'cart' }
+  ]},
+  { group: '客戶及場地', items: [
+    { key:'users',  label:'用戶管理',   icon:'users' },
+    { key:'venues', label:'場地夥伴',   icon:'store', todo:['venuesPending'] }
+  ]},
+  { group: '財務', items: [
+    { key:'finance',     label:'收益報表', icon:'coins' },
+    { key:'withdrawals', label:'分成提現', icon:'bank', todo:['withdrawals'] }
+  ]},
+  { group: '系統', items: [
+    { key:'settings', label:'系統設定', icon:'gear' }
+  ]}
+];
+
+IC.shell = (function () {
+  var built = false, todo = {};
+
+  function brand() {
+    return '<div class="nav__brand">' + IC.icon('fan') +
+      '<b>instant<em>cool</em></b><span>後台</span></div>';
+  }
+
+  function navHtml() {
+    return IC.nav.map(function (sec) {
+      return (sec.group ? '<div class="nav__group">' + IC.util.esc(sec.group) + '</div>' : '') +
+        sec.items.map(function (it) {
+          var n = (it.todo || []).reduce(function (s, k) { return s + (todo[k] || 0); }, 0);
+          return '<button class="nav__item" data-nav="' + it.key + '">' +
+            IC.icon(it.icon) + '<span>' + IC.util.esc(it.label) + '</span>' +
+            (n ? '<span class="nav__badge">' + n + '</span>' : '') +
+          '</button>';
+        }).join('');
+    }).join('');
+  }
+
+  return {
+    /** 建立外框一次，之後只換 #page 的內容。 */
+    ensure: function () {
+      if (built) return;
+      var a = IC.fixtures.admin;
+      document.getElementById('root').innerHTML =
+        '<div class="shell">' +
+          '<aside class="nav">' + brand() +
+            '<div class="nav__scroll" id="navlist">' + navHtml() + '</div>' +
+          '</aside>' +
+          '<div class="main">' +
+            '<header class="top">' +
+              '<div><div class="top__title" id="ptitle"></div>' +
+              '<div class="top__crumb" id="pcrumb"></div></div>' +
+              '<div class="top__right">' +
+                '<button class="btn btn--ghost btn--sm" data-act="refresh">' +
+                  IC.icon('refresh') + '重新整理</button>' +
+                '<div class="top__user"><span class="avatar">' +
+                  IC.util.esc(a.name.slice(0, 1)) + '</span>' +
+                  '<b>' + IC.util.esc(a.name) + '</b>' +
+                  '<span class="muted">' + IC.util.esc(a.role) + '</span></div>' +
+                '<button class="btn btn--ghost btn--sm" data-act="logout">' +
+                  IC.icon('logout') + '登出</button>' +
+              '</div>' +
+            '</header>' +
+            '<div class="page" id="page"></div>' +
+          '</div>' +
+        '</div>';
+      built = true;
+
+      var root = document.getElementById('root');
+      IC.util.on(root, '[data-nav]', function (e, el) {
+        IC.router.go(el.getAttribute('data-nav'));
+      });
+      IC.util.on(root, '[data-act="refresh"]', function () {
+        IC.router.refresh();
+        IC.toast('已重新載入');
+      });
+      IC.util.on(root, '[data-act="logout"]', function () {
+        IC.confirm({ title: '登出', body: '確定要登出後台嗎？', confirm: '登出' })
+          .then(function (yes) {
+            if (!yes) return;
+            IC.store.reset();
+            IC.router.go('login');
+          });
+      });
+    },
+
+    toggle: function (show) {
+      var r = document.getElementById('root');
+      if (!show) { built = false; r.innerHTML = ''; }
+    },
+
+    setTitle: function (title, crumb) {
+      var t = document.getElementById('ptitle'), c = document.getElementById('pcrumb');
+      if (t) t.textContent = title || '';
+      if (c) c.textContent = crumb || '';
+      document.title = (title ? title + ' · ' : '') + 'Instantcool 後台';
+    },
+
+    setActive: function (key) {
+      IC.util.els('[data-nav]').forEach(function (b) {
+        b.classList.toggle('is-active', b.getAttribute('data-nav') === key);
+      });
+    },
+
+    /** 由概覽頁把待辦數字回填到導覽列的紅點。 */
+    setTodo: function (counts) {
+      todo = counts || {};
+      var host = document.getElementById('navlist');
+      if (!host) return;
+      host.innerHTML = navHtml();
+      IC.shell.setActive(IC.router.current);
+    }
+  };
+})();
+
+/* ==== src/views/login.js ==== */
+/* login.js — 後台登入。示範版任何電郵加密碼皆可進入。 */
+window.IC = window.IC || {};
+
+IC.routes.login = {
+  title: '登入',
+
+  render: function () {
+    return '<div class="login"><div class="login__card">' +
+      '<div class="login__brand">' + IC.icon('fan') + '<b>instant<em>cool</em></b></div>' +
+      '<p class="tiny" style="text-align:center;margin:0 0 20px">營運後台</p>' +
+      '<div class="stack">' +
+        '<div><label class="tiny">電郵</label>' +
+          '<input class="field" id="em" type="email" autocomplete="username" ' +
+            'value="dylan@instant-cool.com" style="margin-top:4px"></div>' +
+        '<div><label class="tiny">密碼</label>' +
+          '<input class="field" id="pw" type="password" autocomplete="current-password" ' +
+            'placeholder="示範版：任意輸入即可" style="margin-top:4px"></div>' +
+        '<button class="btn" id="go" style="margin-top:4px">登入</button>' +
+      '</div>' +
+      '<p class="tiny" style="text-align:center;margin-top:16px">' +
+        '示範版本，資料全為模擬。正式環境須啟用雙重認證。</p>' +
+    '</div></div>';
+  },
+
+  mount: function (root, params) {
+    var em = root.querySelector('#em'), pw = root.querySelector('#pw'), go = root.querySelector('#go');
+    pw.focus();
+
+    function submit() {
+      if (!pw.value) { IC.toast('請輸入密碼'); return; }
+      go.disabled = true; go.textContent = '登入中…';
+      IC.api.signIn(em.value, pw.value).then(function (admin) {
+        IC.store.set({ signedIn: true, user: admin });
+        IC.router.go(params.next || 'dashboard');
+      }).catch(function () {
+        go.disabled = false; go.textContent = '登入';
+        IC.toast('電郵或密碼不正確');
+      });
+    }
+    go.addEventListener('click', submit);
+    [em, pw].forEach(function (f) {
+      f.addEventListener('keydown', function (e) { if (e.key === 'Enter') submit(); });
+    });
+  }
+};
+
+/* ==== src/views/dashboard.js ==== */
+/* ==========================================================================
+   dashboard.js — 概覽
+
+   對應 Yellowpal 後台首頁的三段結構：頂部數據卡、智能檢測、待辦事項，
+   再加公告。分別在於這裡的每一格都可以點入對應的篩選後列表——
+   看見「3 部離線」而不能一鍵跳去處理，那個數字就只是裝飾。
+   ========================================================================== */
+window.IC = window.IC || {};
+
+IC.routes.dashboard = (function () {
+  function kpi(o) {
+    return '<div class="kpi' + (o.tone ? ' kpi--' + o.tone : '') + '">' +
+      '<div class="kpi__label">' + IC.icon(o.icon) + IC.util.esc(o.label) + '</div>' +
+      '<div class="kpi__value">' + o.value + (o.unit ? '<small>' + o.unit + '</small>' : '') + '</div>' +
+      (o.sub ? '<div class="kpi__sub">' + o.sub + '</div>' : '') +
+    '</div>';
+  }
+
+  function tile(o) {
+    var tone = o.n === 0 ? 'clear' : (o.tone || 'warn');
+    return '<button class="tile tile--' + tone + '" data-go="' + IC.util.esc(o.go) + '">' +
+      '<div class="tile__v">' + o.n + '</div>' +
+      '<div class="tile__k">' + IC.util.esc(o.label) + '</div></button>';
+  }
+
+  return {
+    title: '概覽',
+    crumb: '營運總覽',
+    nav: 'dashboard',
+    guard: 'auth',
+
+    render: function () {
+      return '<div id="dash"><div class="empty">' + IC.icon('refresh') + '<div>載入中…</div></div></div>';
+    },
+
+    mount: function (host) {
+      IC.api.overview().then(function (d) {
+        IC.shell.setTodo(d.todo);
+        var t = d.todo;
+        var max = Math.max.apply(null, d.daily);
+        var days = ['一', '二', '三', '四', '五', '六', '日'];
+        var utilisation = d.cabinets ? d.cabinetsOnline / d.cabinets : 0;
+
+        host.innerHTML =
+          (IC.config.runtime.demoData
+            ? '<div class="demo">示範資料：以下機櫃、訂單、用戶及分成金額全為模擬數據，並非實際營運紀錄。</div>'
+            : '') +
+
+          '<div class="kpis">' +
+            kpi({ icon:'coins', label:'總收益', value: IC.util.money0(d.revenueTotal),
+                  sub:'租借 ' + IC.util.money0(d.rentalRevenue) + '　·　零售 ' + IC.util.money0(d.retailRevenue) }) +
+            kpi({ icon:'clock', label:'今日收益', value: IC.util.money0(d.revenueToday), tone:'ok',
+                  sub:'今日訂單 ' + d.ordersToday + ' 張' }) +
+            kpi({ icon:'receipt', label:'訂單總數', value: IC.util.num(d.ordersTotal),
+                  sub:'租借及零售合計' }) +
+            kpi({ icon:'box', label:'機櫃在線', value: d.cabinetsOnline, unit:'/ ' + d.cabinets,
+                  tone: utilisation < 0.8 ? 'warn' : 'ok',
+                  sub:'在線率 ' + IC.util.pct(utilisation) }) +
+            kpi({ icon:'fan', label:'風扇可借', value: d.fansAvailable, unit:'/ ' + d.fans,
+                  sub:'其餘為租借中、消毒或維修' }) +
+            kpi({ icon:'users', label:'註冊用戶', value: IC.util.num(d.users), tone:'idle' }) +
+            kpi({ icon:'store', label:'營運中場地', value: d.venuesActive,
+                  tone:'idle', sub: d.venuesPipeline + ' 個洽談／待簽約' }) +
+            kpi({ icon:'bank', label:'待批核提現', value: IC.util.money0(d.pendingWithdrawals),
+                  tone:'warn', sub:'場地夥伴已申請、等待批核' }) +
+          '</div>' +
+
+          '<div class="grid2">' +
+            '<div class="panel">' +
+              '<div class="panel__head">' +
+                '<div class="panel__title">待辦事項</div>' +
+                '<div class="panel__hint">需要人手跟進</div>' +
+              '</div>' +
+              '<div class="panel__body"><div class="tiles">' +
+                tile({ n:t.offline,     label:'機櫃離線',   go:'cabinets?status=offline',  tone:'attention' }) +
+                tile({ n:t.fault,       label:'機櫃故障',   go:'cabinets?status=fault',    tone:'attention' }) +
+                tile({ n:t.unplaced,    label:'未投放機櫃', go:'cabinets?status=unplaced' }) +
+                tile({ n:t.lowBattery,  label:'低電量風扇', go:'fans?status=charging' }) +
+                tile({ n:t.lostFans,    label:'遺失風扇',   go:'fans?status=lost',         tone:'attention' }) +
+                tile({ n:t.overdue,     label:'逾期未還',   go:'orders?status=overdue',    tone:'attention' }) +
+                tile({ n:t.uvFailed,    label:'消毒中斷',   go:'hygiene?result=aborted',   tone:'attention' }) +
+                tile({ n:t.withdrawals, label:'待批提現',   go:'withdrawals?status=pending' }) +
+                tile({ n:t.venuesPending, label:'待簽場地', go:'venues?status=pending' }) +
+              '</div></div>' +
+            '</div>' +
+
+            '<div class="panel">' +
+              '<div class="panel__head">' +
+                '<div class="panel__title">過去 7 日租借次數</div>' +
+                '<div class="panel__hint">全機隊合計</div>' +
+              '</div>' +
+              '<div class="panel__body">' +
+                '<div class="bars">' + d.daily.map(function (v) {
+                  return '<div style="height:' + Math.max(4, (v / max) * 100) + '%" title="' + v + ' 次"></div>';
+                }).join('') + '</div>' +
+                '<div class="bars-x">' + days.map(function (x) {
+                  return '<span>' + x + '</span>';
+                }).join('') + '</div>' +
+                '<div class="hr"></div>' +
+                '<div class="kv"><span>7 日合計</span><b>' +
+                  IC.util.num(d.daily.reduce(function (s, v) { return s + v; }, 0)) + ' 次</b></div>' +
+                '<div class="kv"><span>日均</span><b>' +
+                  (d.daily.reduce(function (s, v) { return s + v; }, 0) / 7).toFixed(1) + ' 次</b></div>' +
+                '<div class="kv"><span>每部機櫃日均</span><b>' +
+                  (d.cabinetsOnline
+                    ? (d.daily.reduce(function (s, v) { return s + v; }, 0) / 7 / d.cabinetsOnline).toFixed(2)
+                    : '—') + ' 次</b></div>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+
+          '<div class="panel">' +
+            '<div class="panel__head"><div class="panel__title">公告</div>' +
+              '<div class="panel__tools"><button class="btn btn--ghost btn--sm" data-go="settings">' +
+                '全部公告</button></div></div>' +
+            '<div class="panel__body" id="news"></div>' +
+          '</div>';
+
+        IC.api.news().then(function (rows) {
+          host.querySelector('#news').innerHTML = rows.map(function (n) {
+            return '<div class="kv"><span>' + IC.util.esc(n.title) + '</span>' +
+                   '<b class="tiny">' + IC.util.date(n.at) + '</b></div>';
+          }).join('');
+        });
+
+        IC.util.on(host, '[data-go]', function (e, el) {
+          IC.router.go(el.getAttribute('data-go'));
+        });
+      });
+    }
+  };
+})();
+
+/* ==== src/views/cabinets.js ==== */
+/* cabinets.js — 機櫃管理。遠端指令是有後果的動作，一律先確認。 */
+window.IC = window.IC || {};
+
+IC.routes.cabinets = {
+  title: '機櫃管理', crumb: '營運 / 機櫃', nav: 'cabinets', guard: 'auth',
+  render: function () { return '<div class="panel" id="tbl"></div>'; },
+
+  mount: function (host, params) {
+    IC.api.cabinets().then(function (rows) {
+      var t = IC.table(host.querySelector('#tbl'), {
+        title: '機櫃', csvName: 'cabinets',
+        rows: rows,
+        searchKeys: ['id', 'code', 'venueName'],
+        filters: [{
+          key: 'status', label: '狀態',
+          options: Object.keys(IC.STATUS.cabinet).map(function (k) {
+            return { v: k, label: IC.STATUS.cabinet[k].label };
+          }),
+          match: function (r, v) { return r.status === v; }
+        }],
+        columns: [
+          { key:'id', label:'機櫃編號', render: function (r) {
+              return '<div class="t__main">' + IC.util.esc(r.id) + '</div>' +
+                     '<div class="t__sub mono">' + IC.util.esc(r.code) + '</div>'; } },
+          { key:'venueName', label:'場地', render: function (r) {
+              return r.venueName ? IC.util.esc(r.venueName)
+                                 : '<span class="tiny">未投放</span>'; } },
+          { key:'status', label:'狀態', render: function (r) { return IC.tag('cabinet', r.status); },
+            csv: function (r) { return IC.STATUS.cabinet[r.status].label; } },
+          { key:'fans', label:'可借 / 格口', align:'right', render: function (r) {
+              return '<b>' + r.fans + '</b> <span class="tiny">/ ' + r.slots + '</span>'; } },
+          { key:'freeSlots', label:'可還格口', align:'right' },
+          { key:'rentalsToday', label:'今日租借', align:'right' },
+          { key:'rssi', label:'訊號', align:'right', render: function (r) {
+              var q = Math.max(0, Math.min(100, (r.rssi + 100) * 2));
+              return IC.meter(q, q < 35 ? 'bad' : (q < 60 ? 'warn' : 'ok')); },
+            csv: function (r) { return r.rssi + ' dBm'; } },
+          { key:'lastSeen', label:'最後心跳', render: function (r) {
+              var stale = Date.now() - r.lastSeen > IC.config.hardware.offlineAfterMinutes * 60000;
+              return '<span class="' + (stale ? 'tag tag--bad' : 'tiny') + '">' +
+                     IC.util.ago(r.lastSeen) + '</span>'; },
+            csv: function (r) { return IC.util.stamp(r.lastSeen); } },
+          { key:'_a', label:'操作', align:'right', render: function (r) {
+              return '<div class="row-actions">' +
+                '<button class="btn btn--ghost btn--sm" data-cmd="reboot" data-id="' +
+                  IC.util.esc(r.id) + '">重啟</button>' +
+                '<button class="btn btn--ghost btn--sm" data-cmd="unlock" data-id="' +
+                  IC.util.esc(r.id) + '">開櫃</button></div>'; },
+            csv: false }
+        ],
+        onRow: function (r) {
+          IC.detail('機櫃 ' + r.id, [
+            ['機櫃編號', r.id], ['面板編號', r.code],
+            ['場地', r.venueName || '未投放'],
+            ['狀態', IC.tag('cabinet', r.status), true],
+            ['格口', r.fans + ' 可借 / ' + r.freeSlots + ' 可還 / 共 ' + r.slots],
+            ['韌體版本', r.firmware],
+            ['訊號強度', r.rssi + ' dBm'],
+            ['最後心跳', IC.util.stamp(r.lastSeen) + '（' + IC.util.ago(r.lastSeen) + '）'],
+            ['今日租借', r.rentalsToday + ' 次'],
+            ['投放日期', IC.util.date(r.installedAt)]
+          ]);
+        }
+      });
+
+      if (params.status) {
+        t.state.filters.status = params.status;
+        t.rerender();
+      }
+
+      IC.util.on(host, '[data-cmd]', function (e, el) {
+        var cmd = el.getAttribute('data-cmd'), id = el.getAttribute('data-id');
+        var label = cmd === 'reboot' ? '重啟機櫃' : '遠端開櫃';
+        IC.confirm({
+          title: label,
+          body: cmd === 'reboot'
+            ? '將向 ' + id + ' 發出重啟指令，期間約 30 秒無法借還。確定繼續？'
+            : '將遠端開啟 ' + id + ' 的櫃門。此操作會記入審計紀錄，請確認現場有人員在旁。',
+          confirm: label
+        }).then(function (yes) {
+          if (!yes) return;
+          IC.api.cabinetCommand(id, cmd).then(function () {
+            IC.toast(label + '指令已送出：' + id);
+          });
+        });
+      });
+    });
+  }
+};
+
+/* ==== src/views/fans.js ==== */
+/* fans.js — 風扇（設備）管理。 */
+window.IC = window.IC || {};
+
+IC.routes.fans = {
+  title: '風扇管理', crumb: '營運 / 風扇', nav: 'fans', guard: 'auth',
+  render: function () { return '<div class="panel" id="tbl"></div>'; },
+
+  mount: function (host, params) {
+    IC.api.fans().then(function (rows) {
+      var t = IC.table(host.querySelector('#tbl'), {
+        title: '風扇', csvName: 'fans', rows: rows,
+        searchKeys: ['id', 'cabinetCode'],
+        filters: [
+          { key:'status', label:'狀態',
+            options: Object.keys(IC.STATUS.fan).map(function (k) {
+              return { v:k, label: IC.STATUS.fan[k].label }; }),
+            match: function (r, v) { return r.status === v; } },
+          { key:'health', label:'健康度',
+            options: [{ v:'good', label:'正常' }, { v:'degraded', label:'電池衰減' }],
+            match: function (r, v) { return r.health === v; } }
+        ],
+        columns: [
+          { key:'id', label:'風扇編號', render: function (r) {
+              return '<span class="t__main mono">' + IC.util.esc(r.id) + '</span>'; } },
+          { key:'status', label:'狀態', render: function (r) { return IC.tag('fan', r.status); },
+            csv: function (r) { return IC.STATUS.fan[r.status].label; } },
+          { key:'cabinetCode', label:'所在機櫃', render: function (r) {
+              return r.cabinetId
+                ? '<span class="mono">' + IC.util.esc(r.cabinetId) + '</span>'
+                : '<span class="tiny">用戶手上</span>'; } },
+          { key:'battery', label:'電量', align:'right',
+            render: function (r) { return IC.batteryMeter(r.battery); },
+            csv: function (r) { return r.battery + '%'; } },
+          { key:'cycles', label:'充電循環', align:'right', render: function (r) {
+              return '<span' + (r.cycles > 250 ? ' class="tag tag--warn"' : '') + '>' +
+                     r.cycles + '</span>'; } },
+          { key:'health', label:'健康度', render: function (r) {
+              return r.health === 'good'
+                ? '<span class="tag tag--ok"><i class="dot"></i>正常</span>'
+                : '<span class="tag tag--warn"><i class="dot"></i>電池衰減</span>'; },
+            csv: function (r) { return r.health === 'good' ? '正常' : '電池衰減'; } },
+          { key:'lastUsedAt', label:'最後使用', render: function (r) {
+              return '<span class="tiny">' + IC.util.ago(r.lastUsedAt) + '</span>'; },
+            csv: function (r) { return IC.util.stamp(r.lastUsedAt); } }
+        ],
+        onRow: function (r) {
+          IC.detail('風扇 ' + r.id, [
+            ['風扇編號', r.id],
+            ['狀態', IC.tag('fan', r.status), true],
+            ['所在機櫃', r.cabinetId || '用戶手上（租借中）'],
+            ['電量', r.battery + '%'],
+            ['充電循環', r.cycles + ' 次'],
+            ['電池健康度', r.health === 'good' ? '正常' : '衰減，建議安排更換'],
+            ['最後使用', IC.util.stamp(r.lastUsedAt)]
+          ]);
+        }
+      });
+      if (params.status) { t.state.filters.status = params.status; t.rerender(); }
+    });
+  }
+};
+
+/* ==== src/views/hygiene.js ==== */
+/* ==========================================================================
+   hygiene.js — 消毒記錄
+
+   Yellowpal 後台沒有對應功能：充電寶不貼身，風扇貼頸。每次歸還後的
+   UV-C 消毒是 Instantcool 對場地及用戶的核心承諾，能否拿得出逐次記錄，
+   是能否簽下康文署及食肆場地的關鍵之一。
+   ========================================================================== */
+window.IC = window.IC || {};
+
+IC.routes.hygiene = {
+  title: '消毒記錄', crumb: '營運 / 紫外光消毒', nav: 'hygiene', guard: 'auth',
+
+  render: function () {
+    return '<div id="sum" class="kpis"></div><div class="panel" id="tbl"></div>' +
+      '<p class="tiny" style="margin-top:12px">' +
+      '每次歸還後機櫃會自動執行 UV-C 消毒。中斷的記錄代表該次消毒未完成，' +
+      '系統會把該風扇暫時標示為不可借，直至重新消毒。</p>';
+  },
+
+  mount: function (host, params) {
+    IC.api.hygiene().then(function (rows) {
+      var ok = rows.filter(function (r) { return r.result === 'ok'; }).length;
+      var aborted = rows.length - ok;
+
+      host.querySelector('#sum').innerHTML =
+        '<div class="kpi kpi--ok"><div class="kpi__label">' + IC.icon('shield') + '消毒完成</div>' +
+          '<div class="kpi__value">' + ok + '</div>' +
+          '<div class="kpi__sub">過去 24 小時</div></div>' +
+        '<div class="kpi ' + (aborted ? 'kpi--bad' : 'kpi--idle') + '">' +
+          '<div class="kpi__label">' + IC.icon('warn') + '消毒中斷</div>' +
+          '<div class="kpi__value">' + aborted + '</div>' +
+          '<div class="kpi__sub">' + (aborted ? '需人手覆檢' : '無異常') + '</div></div>' +
+        '<div class="kpi"><div class="kpi__label">' + IC.icon('clock') + '完成率</div>' +
+          '<div class="kpi__value">' + IC.util.pct(rows.length ? ok / rows.length : 1, 1) + '</div></div>' +
+        '<div class="kpi kpi--idle"><div class="kpi__label">' + IC.icon('refresh') + '標準週期</div>' +
+          '<div class="kpi__value">' + IC.config.hardware.uvDisinfectSeconds +
+          '<small>秒</small></div></div>';
+
+      var t = IC.table(host.querySelector('#tbl'), {
+        title: '消毒記錄', csvName: 'uv_logs', rows: rows,
+        searchKeys: ['id', 'cabinetId', 'fanId'],
+        filters: [{
+          key:'result', label:'結果',
+          options: [{ v:'ok', label:'完成' }, { v:'aborted', label:'中斷' }],
+          match: function (r, v) { return r.result === v; }
+        }],
+        columns: [
+          { key:'id', label:'記錄編號', render: function (r) {
+              return '<span class="mono">' + IC.util.esc(r.id) + '</span>'; } },
+          { key:'cabinetId', label:'機櫃', render: function (r) {
+              return '<span class="mono">' + IC.util.esc(r.cabinetId) + '</span>'; } },
+          { key:'slot', label:'格口', align:'right' },
+          { key:'fanId', label:'風扇', render: function (r) {
+              return '<span class="mono">' + IC.util.esc(r.fanId) + '</span>'; } },
+          { key:'startedAt', label:'開始時間',
+            render: function (r) { return IC.util.stamp(r.startedAt); },
+            csv: function (r) { return IC.util.stamp(r.startedAt); } },
+          { key:'durationS', label:'時長', align:'right', render: function (r) {
+              var short = r.durationS < IC.config.hardware.uvDisinfectSeconds;
+              return '<span class="' + (short ? 'tag tag--bad' : '') + '">' + r.durationS + ' 秒</span>'; } },
+          { key:'result', label:'結果', render: function (r) { return IC.tag('hygiene', r.result); },
+            csv: function (r) { return IC.STATUS.hygiene[r.result].label; } }
+        ]
+      });
+      if (params.result) { t.state.filters.result = params.result; t.rerender(); }
+    });
+  }
+};
+
+/* ==== src/views/orders.js ==== */
+/* orders.js — 租借訂單。 */
+window.IC = window.IC || {};
+
+IC.routes.orders = {
+  title: '租借訂單', crumb: '訂單 / 租借', nav: 'orders', guard: 'auth',
+  render: function () { return '<div class="panel" id="tbl"></div>'; },
+
+  mount: function (host, params) {
+    IC.api.orders().then(function (rows) {
+      var t = IC.table(host.querySelector('#tbl'), {
+        title: '租借訂單', csvName: 'rentals', rows: rows, per: 14,
+        searchKeys: ['id', 'userId', 'mobile', 'cabinetId', 'venueName'],
+        filters: [{
+          key:'status', label:'狀態',
+          options: Object.keys(IC.STATUS.order).map(function (k) {
+            return { v:k, label: IC.STATUS.order[k].label }; }),
+          match: function (r, v) { return r.status === v; }
+        }],
+        columns: [
+          { key:'id', label:'訂單編號', render: function (r) {
+              return '<span class="t__main mono">' + IC.util.esc(r.id) + '</span>'; } },
+          { key:'startedAt', label:'開始時間',
+            render: function (r) { return IC.util.stamp(r.startedAt); },
+            csv: function (r) { return IC.util.stamp(r.startedAt); } },
+          { key:'mobile', label:'用戶', render: function (r) {
+              return '<div>' + IC.util.esc(r.mobile) + '</div>' +
+                     '<div class="t__sub mono">' + IC.util.esc(r.userId) + '</div>'; } },
+          { key:'venueName', label:'借出場地' },
+          { key:'minutes', label:'時長', align:'right',
+            render: function (r) { return IC.util.duration(r.minutes); },
+            csv: function (r) { return r.minutes; } },
+          { key:'promo', label:'費率', render: function (r) {
+              return r.promo
+                ? '<span class="tag tag--ic">推廣 ' + IC.util.money(IC.config.pricing.promoRatePerHour) + '</span>'
+                : '<span class="tiny">正價 ' + IC.util.money(IC.config.pricing.ratePerHour) + '</span>'; },
+            csv: function (r) { return r.promo ? '推廣價' : '正價'; } },
+          { key:'amount', label:'金額', align:'right',
+            render: function (r) { return '<b>' + IC.util.money(r.amount) + '</b>'; },
+            csv: function (r) { return r.amount.toFixed(2); } },
+          { key:'status', label:'狀態', render: function (r) { return IC.tag('order', r.status); },
+            csv: function (r) { return IC.STATUS.order[r.status].label; } }
+        ],
+        onRow: function (r) {
+          var venueCut = r.amount * IC.config.venue.sharePct;
+          IC.detail('訂單 ' + r.id, [
+            ['訂單編號', r.id],
+            ['狀態', IC.tag('order', r.status), true],
+            ['用戶', r.mobile + '（' + r.userId + '）'],
+            ['借出機櫃', r.cabinetId],
+            ['借出場地', r.venueName],
+            ['開始時間', IC.util.stamp(r.startedAt)],
+            ['使用時長', IC.util.duration(r.minutes)],
+            ['費率', r.promo ? '推廣價 ' + IC.util.money(IC.config.pricing.promoRatePerHour) + ' / 小時'
+                             : '正價 ' + IC.util.money(IC.config.pricing.ratePerHour) + ' / 小時'],
+            ['訂單金額', IC.util.money(r.amount)],
+            ['場地分成（' + IC.util.pct(IC.config.venue.sharePct) + '）', IC.util.money(venueCut)]
+          ]);
+        }
+      });
+      if (params.status) { t.state.filters.status = params.status; t.rerender(); }
+    });
+  }
+};
+
+/* ==== src/views/retail.js ==== */
+/* retail.js — 零售訂單（買斷風扇）。 */
+window.IC = window.IC || {};
+
+IC.routes.retail = {
+  title: '零售訂單', crumb: '訂單 / 零售', nav: 'retail', guard: 'auth',
+  render: function () { return '<div id="sum" class="kpis"></div><div class="panel" id="tbl"></div>'; },
+
+  mount: function (host, params) {
+    IC.api.retail().then(function (rows) {
+      var paid = rows.filter(function (r) { return r.status !== 'refunded'; });
+      var units = paid.reduce(function (s, r) { return s + r.qty; }, 0);
+      var rev = paid.reduce(function (s, r) { return s + r.amount; }, 0);
+
+      host.querySelector('#sum').innerHTML =
+        '<div class="kpi"><div class="kpi__label">' + IC.icon('cart') + '零售收益</div>' +
+          '<div class="kpi__value">' + IC.util.money0(rev) + '</div></div>' +
+        '<div class="kpi kpi--idle"><div class="kpi__label">' + IC.icon('fan') + '售出數量</div>' +
+          '<div class="kpi__value">' + units + '<small>部</small></div></div>' +
+        '<div class="kpi kpi--idle"><div class="kpi__label">' + IC.icon('receipt') + '平均訂單值</div>' +
+          '<div class="kpi__value">' + IC.util.money0(paid.length ? rev / paid.length : 0) + '</div></div>' +
+        '<div class="kpi kpi--warn"><div class="kpi__label">' + IC.icon('warn') + '待處理</div>' +
+          '<div class="kpi__value">' +
+            rows.filter(function (r) { return r.status === 'preparing'; }).length +
+          '<small>備貨中</small></div></div>';
+
+      var t = IC.table(host.querySelector('#tbl'), {
+        title: '零售訂單', csvName: 'retail_orders', rows: rows,
+        searchKeys: ['id', 'userId'],
+        filters: [{
+          key:'status', label:'狀態',
+          options: Object.keys(IC.STATUS.retail).map(function (k) {
+            return { v:k, label: IC.STATUS.retail[k].label }; }),
+          match: function (r, v) { return r.status === v; }
+        }],
+        columns: [
+          { key:'id', label:'訂單編號', render: function (r) {
+              return '<span class="t__main mono">' + IC.util.esc(r.id) + '</span>'; } },
+          { key:'createdAt', label:'下單時間',
+            render: function (r) { return IC.util.stamp(r.createdAt); },
+            csv: function (r) { return IC.util.stamp(r.createdAt); } },
+          { key:'userId', label:'用戶', render: function (r) {
+              return '<span class="mono">' + IC.util.esc(r.userId) + '</span>'; } },
+          { key:'qty', label:'數量', align:'right' },
+          { key:'fulfilment', label:'取貨方式', render: function (r) {
+              return r.fulfilment === 'cabinet'
+                ? '<span class="tag">機櫃自取</span>'
+                : '<span class="tag tag--ic">順豐速運</span>'; },
+            csv: function (r) { return r.fulfilment === 'cabinet' ? '機櫃自取' : '順豐速運'; } },
+          { key:'amount', label:'金額', align:'right',
+            render: function (r) { return '<b>' + IC.util.money(r.amount) + '</b>'; },
+            csv: function (r) { return r.amount.toFixed(2); } },
+          { key:'status', label:'狀態', render: function (r) { return IC.tag('retail', r.status); },
+            csv: function (r) { return IC.STATUS.retail[r.status].label; } }
+        ]
+      });
+      if (params.status) { t.state.filters.status = params.status; t.rerender(); }
+    });
+  }
+};
+
+/* ==== src/views/users.js ==== */
+/* users.js — 用戶管理。 */
+window.IC = window.IC || {};
+
+IC.routes.users = {
+  title: '用戶管理', crumb: '客戶 / 用戶', nav: 'users', guard: 'auth',
+  render: function () { return '<div class="panel" id="tbl"></div>'; },
+
+  mount: function (host, params) {
+    IC.api.users().then(function (rows) {
+      var t = IC.table(host.querySelector('#tbl'), {
+        title: '註冊用戶', csvName: 'users', rows: rows,
+        searchKeys: ['id', 'mobile'],
+        filters: [{
+          key:'status', label:'狀態',
+          options: [{ v:'active', label:'正常' }, { v:'blocked', label:'已停用' }],
+          match: function (r, v) { return r.status === v; }
+        }],
+        columns: [
+          { key:'id', label:'用戶編號', render: function (r) {
+              return '<span class="t__main mono">' + IC.util.esc(r.id) + '</span>'; } },
+          { key:'mobile', label:'手機號碼' },
+          { key:'joinedAt', label:'註冊日期',
+            render: function (r) { return IC.util.date(r.joinedAt); },
+            csv: function (r) { return IC.util.date(r.joinedAt); } },
+          { key:'rentals', label:'租借次數', align:'right' },
+          { key:'spend', label:'累計消費', align:'right',
+            render: function (r) { return IC.util.money(r.spend); },
+            csv: function (r) { return r.spend.toFixed(2); } },
+          { key:'lastActiveAt', label:'最後活躍',
+            render: function (r) { return '<span class="tiny">' + IC.util.ago(r.lastActiveAt) + '</span>'; },
+            csv: function (r) { return IC.util.stamp(r.lastActiveAt); } },
+          { key:'status', label:'狀態', render: function (r) { return IC.tag('user', r.status); },
+            csv: function (r) { return IC.STATUS.user[r.status].label; } }
+        ],
+        onRow: function (r) {
+          IC.detail('用戶 ' + r.id, [
+            ['用戶編號', r.id],
+            ['手機號碼', r.mobile],
+            ['狀態', IC.tag('user', r.status), true],
+            ['註冊日期', IC.util.date(r.joinedAt)],
+            ['租借次數', r.rentals + ' 次'],
+            ['累計消費', IC.util.money(r.spend)],
+            ['最後活躍', IC.util.stamp(r.lastActiveAt)]
+          ], '<p class="tiny" style="margin:14px 0 0">' +
+             '個人資料的查閱及更正要求，須按《個人資料（私隱）條例》第 18 及 22 條於 40 日內處理。</p>');
+        }
+      });
+      if (params.status) { t.state.filters.status = params.status; t.rerender(); }
+    });
+  }
+};
+
+/* ==== src/views/venues.js ==== */
+/* venues.js — 場地夥伴。洽談中及待簽約的場地一併在此追蹤。 */
+window.IC = window.IC || {};
+
+IC.routes.venues = {
+  title: '場地夥伴', crumb: '客戶及場地 / 場地', nav: 'venues', guard: 'auth',
+  render: function () { return '<div id="sum" class="kpis"></div><div class="panel" id="tbl"></div>'; },
+
+  mount: function (host, params) {
+    IC.api.venues().then(function (rows) {
+      var active = rows.filter(function (r) { return r.status === 'active'; });
+      var points = rows.reduce(function (s, r) { return s + r.cabinets; }, 0);
+
+      host.querySelector('#sum').innerHTML =
+        '<div class="kpi kpi--ok"><div class="kpi__label">' + IC.icon('store') + '營運中場地</div>' +
+          '<div class="kpi__value">' + active.length + '</div></div>' +
+        '<div class="kpi kpi--warn"><div class="kpi__label">' + IC.icon('clock') + '洽談／待簽約</div>' +
+          '<div class="kpi__value">' + (rows.length - active.length) + '</div></div>' +
+        '<div class="kpi"><div class="kpi__label">' + IC.icon('box') + '已投放點位</div>' +
+          '<div class="kpi__value">' + points + '</div></div>' +
+        '<div class="kpi kpi--idle"><div class="kpi__label">' + IC.icon('coins') + '標準分成</div>' +
+          '<div class="kpi__value">' + IC.util.pct(IC.config.venue.sharePct) + '</div>' +
+          '<div class="kpi__sub">每月 ' + IC.config.venue.settlementDay + ' 號結算</div></div>';
+
+      var t = IC.table(host.querySelector('#tbl'), {
+        title: '場地', csvName: 'venues', rows: rows,
+        searchKeys: ['id', 'name', 'district', 'contact'],
+        filters: [{
+          key:'status', label:'狀態',
+          options: Object.keys(IC.STATUS.venue).map(function (k) {
+            return { v:k, label: IC.STATUS.venue[k].label }; }),
+          match: function (r, v) { return r.status === v; }
+        }],
+        columns: [
+          { key:'name', label:'場地名稱', render: function (r) {
+              return '<div class="t__main">' + IC.util.esc(r.name) + '</div>' +
+                     '<div class="t__sub">' + IC.util.esc(r.district) + '　·　' +
+                     IC.util.esc(r.id) + '</div>'; } },
+          { key:'status', label:'狀態', render: function (r) { return IC.tag('venue', r.status); },
+            csv: function (r) { return IC.STATUS.venue[r.status].label; } },
+          { key:'cabinets', label:'機櫃', align:'right' },
+          { key:'sharePct', label:'分成', align:'right',
+            render: function (r) { return IC.util.pct(r.sharePct); },
+            csv: function (r) { return IC.util.pct(r.sharePct); } },
+          { key:'contact', label:'聯絡人', render: function (r) {
+              return '<div>' + IC.util.esc(r.contact) + '</div>' +
+                     '<div class="t__sub">' + IC.util.esc(r.phone) + '</div>'; } },
+          { key:'signedAt', label:'簽約日期', render: function (r) {
+              return r.signedAt ? IC.util.date(r.signedAt) : '<span class="tiny">未簽約</span>'; },
+            csv: function (r) { return r.signedAt ? IC.util.date(r.signedAt) : ''; } }
+        ],
+        onRow: function (r) {
+          IC.detail(r.name, [
+            ['場地編號', r.id], ['地區', r.district],
+            ['狀態', IC.tag('venue', r.status), true],
+            ['分成比率', IC.util.pct(r.sharePct)],
+            ['已投放機櫃', r.cabinets + ' 部'],
+            ['聯絡人', r.contact + '　' + r.phone],
+            ['簽約日期', r.signedAt ? IC.util.date(r.signedAt) : '尚未簽約']
+          ]);
+        }
+      });
+      if (params.status) { t.state.filters.status = params.status; t.rerender(); }
+    });
+  }
+};
+
+/* ==== src/views/finance.js ==== */
+/* ==========================================================================
+   finance.js — 收益報表
+
+   只呈現收入與應付場地分成。公司自身的成本結構、毛利及財務指標刻意不在
+   前端計算或顯示，與前台同一條規則——這些留在試算表，不進瀏覽器。
+   ========================================================================== */
+window.IC = window.IC || {};
+
+IC.routes.finance = {
+  title: '收益報表', crumb: '財務 / 收益', nav: 'finance', guard: 'auth',
+
+  render: function () {
+    return '<div id="sum" class="kpis"></div>' +
+      '<div class="panel"><div class="panel__head">' +
+        '<div class="panel__title">按場地劃分</div>' +
+        '<div class="panel__hint">租借毛收入及應付分成</div></div>' +
+        '<div class="panel__body panel__body--flush" id="byvenue"></div></div>' +
+      '<p class="tiny" style="margin-top:12px">' +
+      '已確認收入只計已完成的訂單；租借中、逾期及已退款的訂單不計入。' +
+      '分成金額 = 該場地租借毛收入 × 該場地的分成比率。' +
+      '「本期應計分成」是按訂單累計的應付金額，與「分成提現」頁的已申請金額是兩回事。</p>';
+  },
+
+  mount: function (host) {
+    Promise.all([IC.api.orders(), IC.api.retail(), IC.api.venues()]).then(function (res) {
+      var orders = res[0], retail = res[1], venues = res[2];
+      var counted = IC.revenue.rentalsRecognised(orders);
+      var rentalRev = IC.revenue.sum(counted);
+      var retailRev = IC.revenue.sum(IC.revenue.retailRecognised(retail));
+      // 逐張訂單按該場地自己的比率計算，而非全部套用標準 35%。
+      var venueDue = IC.revenue.venueAccrual(orders, venues);
+
+      host.querySelector('#sum').innerHTML =
+        '<div class="kpi"><div class="kpi__label">' + IC.icon('coins') + '總收益</div>' +
+          '<div class="kpi__value">' + IC.util.money0(rentalRev + retailRev) + '</div></div>' +
+        '<div class="kpi kpi--idle"><div class="kpi__label">' + IC.icon('receipt') + '租借收入</div>' +
+          '<div class="kpi__value">' + IC.util.money0(rentalRev) + '</div>' +
+          '<div class="kpi__sub">' + counted.length + ' 張訂單</div></div>' +
+        '<div class="kpi kpi--idle"><div class="kpi__label">' + IC.icon('cart') + '零售收入</div>' +
+          '<div class="kpi__value">' + IC.util.money0(retailRev) + '</div></div>' +
+        '<div class="kpi kpi--warn"><div class="kpi__label">' + IC.icon('bank') + '本期應計分成</div>' +
+          '<div class="kpi__value">' + IC.util.money0(venueDue) + '</div>' +
+          '<div class="kpi__sub">按各場地比率逐張訂單計算</div></div>';
+
+      /* 按場地匯總 */
+      var byVenue = {};
+      counted.forEach(function (o) {
+        var k = o.venueName || '—';
+        byVenue[k] = byVenue[k] || { name: k, orders: 0, gross: 0 };
+        byVenue[k].orders += 1;
+        byVenue[k].gross += o.amount;
+      });
+      var rows = Object.keys(byVenue).map(function (k) {
+        var v = byVenue[k];
+        var def = venues.filter(function (x) { return x.name === k; })[0];
+        var pct = def ? def.sharePct : IC.config.venue.sharePct;
+        v.sharePct = pct;
+        v.due = v.gross * pct;
+        return v;
+      }).sort(function (a, b) { return b.gross - a.gross; });
+
+      IC.table(host.querySelector('#byvenue'), {
+        title: '', csvName: 'revenue_by_venue', rows: rows, per: 20,
+        searchKeys: ['name'],
+        columns: [
+          { key:'name', label:'場地', render: function (r) {
+              return '<span class="t__main">' + IC.util.esc(r.name) + '</span>'; } },
+          { key:'orders', label:'訂單數', align:'right' },
+          { key:'gross', label:'毛收入', align:'right',
+            render: function (r) { return IC.util.money(r.gross); },
+            csv: function (r) { return r.gross.toFixed(2); } },
+          { key:'sharePct', label:'分成比率', align:'right',
+            render: function (r) { return IC.util.pct(r.sharePct); },
+            csv: function (r) { return IC.util.pct(r.sharePct); } },
+          { key:'due', label:'應付分成', align:'right',
+            render: function (r) { return '<b>' + IC.util.money(r.due) + '</b>'; },
+            csv: function (r) { return r.due.toFixed(2); } }
+        ]
+      });
+    });
+  }
+};
+
+/* ==== src/views/withdrawals.js ==== */
+/* withdrawals.js — 分成提現批核。 */
+window.IC = window.IC || {};
+
+IC.routes.withdrawals = {
+  title: '分成提現', crumb: '財務 / 提現', nav: 'withdrawals', guard: 'auth',
+  render: function () { return '<div id="sum" class="kpis"></div><div class="panel" id="tbl"></div>'; },
+
+  mount: function (host, params) {
+    function load() {
+      IC.api.withdrawals().then(function (rows) {
+        var pending = rows.filter(function (r) { return r.status === 'pending'; });
+        var paid = rows.filter(function (r) { return r.status === 'paid'; });
+
+        host.querySelector('#sum').innerHTML =
+          '<div class="kpi kpi--warn"><div class="kpi__label">' + IC.icon('clock') + '待批核</div>' +
+            '<div class="kpi__value">' + pending.length + '<small>宗</small></div>' +
+            '<div class="kpi__sub">合計 ' +
+              IC.util.money0(pending.reduce(function (s, r) { return s + r.amount; }, 0)) +
+            '</div></div>' +
+          '<div class="kpi kpi--ok"><div class="kpi__label">' + IC.icon('check') + '已支付</div>' +
+            '<div class="kpi__value">' +
+              IC.util.money0(paid.reduce(function (s, r) { return s + r.amount; }, 0)) + '</div>' +
+            '<div class="kpi__sub">' + paid.length + ' 宗</div></div>' +
+          '<div class="kpi kpi--idle"><div class="kpi__label">' + IC.icon('bank') + '結算日</div>' +
+            '<div class="kpi__value">每月 ' + IC.config.venue.settlementDay + '<small>號</small></div>' +
+            '<div class="kpi__sub">結算上月分成</div></div>';
+
+        var t = IC.table(host.querySelector('#tbl'), {
+          title: '提現申請', csvName: 'withdrawals', rows: rows,
+          searchKeys: ['id', 'venueName', 'period'],
+          filters: [{
+            key:'status', label:'狀態',
+            options: Object.keys(IC.STATUS.withdrawal).map(function (k) {
+              return { v:k, label: IC.STATUS.withdrawal[k].label }; }),
+            match: function (r, v) { return r.status === v; }
+          }],
+          columns: [
+            { key:'id', label:'申請編號', render: function (r) {
+                return '<span class="t__main mono">' + IC.util.esc(r.id) + '</span>'; } },
+            { key:'venueName', label:'場地' },
+            { key:'period', label:'結算期' },
+            { key:'amount', label:'金額', align:'right',
+              render: function (r) { return '<b>' + IC.util.money(r.amount) + '</b>'; },
+              csv: function (r) { return r.amount.toFixed(2); } },
+            { key:'requestedAt', label:'申請日期',
+              render: function (r) { return IC.util.date(r.requestedAt); },
+              csv: function (r) { return IC.util.date(r.requestedAt); } },
+            { key:'status', label:'狀態',
+              render: function (r) { return IC.tag('withdrawal', r.status); },
+              csv: function (r) { return IC.STATUS.withdrawal[r.status].label; } },
+            { key:'_a', label:'操作', align:'right', render: function (r) {
+                return r.status === 'pending'
+                  ? '<div class="row-actions"><button class="btn btn--sm" data-ok="' +
+                    IC.util.esc(r.id) + '">批核支付</button></div>'
+                  : '<span class="tiny">—</span>'; },
+              csv: false }
+          ]
+        });
+        if (params.status) { t.state.filters.status = params.status; t.rerender(); }
+
+        IC.util.on(host, '[data-ok]', function (e, el) {
+          var id = el.getAttribute('data-ok');
+          var w = rows.filter(function (x) { return x.id === id; })[0];
+          IC.confirm({
+            title: '批核提現',
+            bodyHtml: '<p class="muted" style="margin:0 0 12px">批核後系統會把款項列為應付，並通知場地夥伴。此操作會記入審計紀錄。</p>' +
+              '<div class="kv"><span>場地</span><b>' + IC.util.esc(w.venueName) + '</b></div>' +
+              '<div class="kv"><span>結算期</span><b>' + IC.util.esc(w.period) + '</b></div>' +
+              '<div class="kv"><span>金額</span><b>' + IC.util.money(w.amount) + '</b></div>',
+            confirm: '確認批核'
+          }).then(function (yes) {
+            if (!yes) return;
+            IC.api.approveWithdrawal(id).then(function () {
+              IC.toast('已批核 ' + id);
+              load();
+            });
+          });
+        });
+      });
+    }
+    load();
+  }
+};
+
+/* ==== src/views/settings.js ==== */
+/* settings.js — 系統設定（唯讀展示；寫入須經後端及權限檢查）。 */
+window.IC = window.IC || {};
+
+IC.routes.settings = {
+  title: '系統設定', crumb: '系統 / 設定', nav: 'settings', guard: 'auth',
+
+  render: function () {
+    var p = IC.config.pricing, h = IC.config.hardware, r = IC.config.retail;
+    function kv(k, v) { return '<div class="kv"><span>' + k + '</span><b>' + v + '</b></div>'; }
+
+    return '<div class="grid2">' +
+      '<div class="panel" style="margin-top:0"><div class="panel__head">' +
+        '<div class="panel__title">收費設定</div>' +
+        '<div class="panel__hint">與前台共用同一組參數</div></div>' +
+        '<div class="panel__body">' +
+          kv('租金（正價）', IC.util.money(p.ratePerHour) + ' / 小時') +
+          kv('推廣價（新場地首月）', IC.util.money(p.promoRatePerHour) + ' / 小時') +
+          kv('計費單位', p.billingBlockMinutes + ' 分鐘，不足一節作一節計') +
+          kv('預授權按金', IC.util.money(p.preAuthDeposit)) +
+          kv('零售價', IC.util.money(r.listPrice)) +
+          kv('會員價', IC.util.money(r.memberPrice)) +
+        '</div></div>' +
+
+      '<div class="panel" style="margin-top:0"><div class="panel__head">' +
+        '<div class="panel__title">場地分成</div></div>' +
+        '<div class="panel__body">' +
+          kv('標準分成比率', IC.util.pct(IC.config.venue.sharePct)) +
+          kv('結算日', '每月 ' + IC.config.venue.settlementDay + ' 號') +
+          kv('結算範圍', '上一個曆月') +
+        '</div></div>' +
+
+      '<div class="panel" style="margin-top:0"><div class="panel__head">' +
+        '<div class="panel__title">硬件參數</div></div>' +
+        '<div class="panel__body">' +
+          kv('每部機櫃格口', h.cabinetSlots + ' 格') +
+          kv('風扇電池', IC.util.num(h.fanBatteryMah) + ' mAh') +
+          kv('UV-C 消毒週期', h.uvDisinfectSeconds + ' 秒') +
+          kv('低電量門檻', h.lowBatteryPct + '%') +
+          kv('離線判定', '心跳中斷超過 ' + h.offlineAfterMinutes + ' 分鐘') +
+        '</div></div>' +
+
+      '<div class="panel" style="margin-top:0"><div class="panel__head">' +
+        '<div class="panel__title">帳戶及權限</div></div>' +
+        '<div class="panel__body">' +
+          kv('目前登入', IC.util.esc(IC.fixtures.admin.name) + '（' +
+             IC.util.esc(IC.fixtures.admin.role) + '）') +
+          kv('電郵', IC.util.esc(IC.fixtures.admin.email)) +
+          kv('雙重認證', '<span class="tag tag--warn"><i class="dot"></i>未啟用</span>') +
+          '<div class="hr"></div>' +
+          '<p class="tiny" style="margin:0">角色權限（系統管理員／營運／財務／場地夥伴唯讀）' +
+          '須於後端實作。前端的隱藏選單不構成權限控制——每個端點都必須自行驗證角色。</p>' +
+        '</div></div>' +
+    '</div>' +
+
+    '<div class="panel"><div class="panel__head">' +
+      '<div class="panel__title">系統資訊</div></div>' +
+      '<div class="panel__body">' +
+        kv('版本', 'v0.1.0') +
+        kv('資料來源', IC.config.runtime.apiMode === 'mock'
+            ? '<span class="tag tag--warn"><i class="dot"></i>示範資料（MOCK）</span>'
+            : '<span class="tag tag--ok"><i class="dot"></i>正式 API</span>') +
+        kv('API 位址', '<span class="mono">' + IC.util.esc(IC.config.runtime.apiBaseUrl) + '</span>') +
+      '</div></div>';
+  },
+
+  mount: function () {}
+};
+
+/* ==== src/main.js ==== */
+/* main.js — 啟動。最後載入，此時所有模組已註冊。 */
+(function () {
+  IC.router.start(document.getElementById('root'));
+
+  /* 未登入時先導向登入頁 */
+  if (!IC.store.get().signedIn && location.hash.indexOf('login') === -1) {
+    IC.router.go('login');
+  }
+
+  /* 給示範及 QA 用的小工具 */
+  window.instantcoolAdmin = {
+    config: IC.config,
+    signIn: function () { IC.store.set({ signedIn: true }); IC.router.go('dashboard'); },
+    reset: function () { IC.store.reset(); location.hash = '#/login'; location.reload(); }
+  };
+})();
+
+</script>
+</body>
+</html>
